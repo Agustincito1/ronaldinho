@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mensajes</title>
+</head>
+<body>
+  <h1>Lista de mensajes</h1>
+
+  {% if mensajes %}
+    <ul>
+      {% for m in mensajes %}
+        <li>{{ m.mensaje }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No hay mensajes en la base de datos.</p>
+  {% endif %}
+
+</body>
+</html>

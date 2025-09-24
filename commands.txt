@@ -1,0 +1,5 @@
+python -m http.server 8000  <--server
+
+
+
+saber ip CMD :5000 ipconfig ahi en ipv4
