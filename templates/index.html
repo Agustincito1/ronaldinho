@@ -2,20 +2,27 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <title>Mensajes</title>
 </head>
 <body>
-  <h1>Lista de mensajes</h1>
-
-  {% if mensajes %}
-    <ul>
-      {% for m in mensajes %}
-        <li>{{ m.mensaje }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No hay mensajes en la base de datos.</p>
-  {% endif %}
+  <header>
+    <h1>Lista de mensajes</h1>
+  </header>
+  <main>
+      {% if mensajes %}
+        <ul>
+          {% for m in mensajes %}
+            <li>{{ m.mensaje }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No hay mensajes en la base de datos.</p>
+      {% endif %}
+  </main>
+  <footer>
+    Pagina creada por Agustin Lazaro Ardeola De Olivera
+  </footer>
 
 </body>
 </html>

@@ -4,12 +4,15 @@ import pygame
 import sys
 import warnings
 from datetime import datetime
+import threading
+import asyncio
+from conn import get_connection
 from utils.functions.gameObject import Personaje, Arco, Pelota, Contador, arcoDibujo
 from utils.functions.functionMenu import show_menu_seleccion, show_ranking
 from utils.functions.functionRegister import login_usuario, registro_usuario, registrar_resultado
-from utils.functions.registroColisiones import registroContinuo, resumenCol, evento_thread
+from utils.functions.registroColisiones import registroContinuo, resumenCol
 from config import BLANCO, WIDTH, HEIGHT, ventana, ROJO, menu_opciones, opcion, fondoResponsive, fuente_chica, fuente, clock, FPS, duracion_partido
-
+from iaMens import generar_mensaje
 from utils.functions.othersFunction import SacarUsuario 
 
 # 🔇 Silencia warnings de pygame/pkg_resources
@@ -116,6 +119,8 @@ def game_over_screen(resultado, goles_jugador, goles_bot):
 
 
 
+
+
 # Mostrar juego y detectar goles
 def gameShow(id_usuario):
     global goles_bot, goles_jugador, last_event_time
@@ -208,6 +213,35 @@ def gameShow(id_usuario):
     eventVar = registroContinuo(jugador, id_usuario, pelota, fecha, bot, arco_derecho, arco_izquierdo)
     now = pygame.time.get_ticks()
 
+
+    if eventVar and (now - last_event_time) > 5000:  # Evita mensajes muy seguidos
+        last_event_time = now
+    
+        import threading
+
+        def registrar_mensaje_sync(id_usuario, eventVar):
+
+            mensaje = asyncio.run(generar_mensaje(SacarUsuario(id_usuario), str(eventVar[0][0])))
+
+            try:
+                conn = get_connection()  # tu función importada
+                cursor = conn.cursor()
+                sql = "INSERT INTO mensaje (mensaje) VALUES (%s)"
+                cursor.execute(sql, (mensaje,))
+                conn.commit()
+                print("✅ Mensaje registrado en DB:", texto)
+            except Exception as e:
+                print("❌ Error al registrar mensaje:", e)
+            finally:
+                cursor.close()
+                conn.close()
+
+        threading.Thread(
+            target=registrar_mensaje_sync,
+            args=(id_usuario, eventVar),
+            daemon=True
+        ).start()
+    
     pygame.display.flip()
 
 

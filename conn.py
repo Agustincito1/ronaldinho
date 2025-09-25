@@ -7,8 +7,8 @@ def get_connection():
     return mysql.connector.connect(
         host="localhost",
         user="root",      # mismo user que usás en phpMyAdmin
-        password="1234",      # misma contraseña
-        database="mensajes"   # tu base creada en phpMyAdmin
+        password="",      # misma contraseña
+        database="mensaje"   # tu base creada en phpMyAdmin
     )
 
 @app.route("/")

@@ -8,20 +8,19 @@ generator = pipeline(
     framework="pt"   # fuerza PyTorch
 )
 
-prompt = "Agustín choca con la pelota. Escribe un mensaje divertido, breve y coherente celebrando la colisión."
+async def generar_mensaje(usuario, evento):
+    prompt = f"{usuario}, choco con {evento}. dame un mensaje describiendo el evento de forma divertida y breve."
 
-
-
-# Generar mensaje
-resultado = generator(
-    prompt,
-    max_new_tokens=15,   # mensaje corto
-    do_sample=True,
-    temperature=0.5,     # creatividad
-    return_full_text=False
-)
-
-# Solo la respuesta, sin repetir el prompt
-mensaje = resultado[0]['generated_text'].strip()
-
-print(mensaje)
+    # Generar mensaje
+    resultado = generator(
+        prompt,
+        max_new_tokens=25,   # mensaje corto
+        do_sample=True,
+        temperature=0.5,     # creatividad
+        return_full_text=False
+    )
+    
+    # Solo la respuesta, sin repetir el prompt
+    mensaje = resultado[0]['generated_text'].strip()
+    print(mensaje)
+    return mensaje

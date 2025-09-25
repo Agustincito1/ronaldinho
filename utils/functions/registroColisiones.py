@@ -30,13 +30,6 @@ def registroContinuo(usuario, id, pelota, fecha, bot, arco_derecho, arco_izquier
             f.write(f"{id},{fecha},{evento},{x},{y}\n")
     return eventos
 
-def evento_thread(id, eventos):
-    def task():
-        for evento, x, y in eventos:
-            usuario = SacarUsuario(id)
-            mensaje = generator(f"{usuario} chocó con el objeto {evento}", max_new_tokens=50)[0]["generated_text"]
-            print(mensaje)
-    threading.Thread(target=task, daemon=True).start()
 
 
 from collections import defaultdict
