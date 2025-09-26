@@ -1,6 +1,7 @@
 import pygame
 pygame.init()
 from config import BLANCO, WIDTH, HEIGHT, ventana, ROJO, menu_opciones, fondoMenuResponsive, fuente, fuente_chica
+from utils.functions.othersFunction import SacarUsuario
 
 def draw_title(texto, fuente, pos, color_principal=BLANCO, color_sombra=(0,0,0)):
 
@@ -44,88 +45,171 @@ def show_menu_seleccion(opcion):
     ventana.blit(indicador, ((WIDTH - indicador.get_width()) // 2, start_y + len(menu_opciones)*spacing + 20))
 
     pygame.display.flip()
-def cargar_usuarios(path="./utils/regist/usuarios.txt"):
-    jugadores = []
-    with open(path, "r", encoding="utf-8") as f:
-        for linea in f:
-            linea = linea.strip()
-            if not linea:
-                continue
-            # Ejemplo: "1,Agustincito,7,4,4"
-            partes = linea.split(",")
-            if len(partes) < 5:
-                continue  # saltar líneas mal formateadas
 
-            uid = int(partes[0])
-            nombre = partes[1].strip()
-            ganados = int(partes[3])
-            perdidos = int(partes[4])
-            empates = int(partes[5])
+from collections import defaultdict
+import datetime
 
-            puntos = ganados * 3 + empates
-            partidos = ganados + perdidos + empates
+def cargar_estadisticas_por_mes(path="./utils/regist/resultados.txt"):
+    """
+    Devuelve un diccionario: {(año, mes): [estadisticas de jugadores]}
+    """
+    from collections import defaultdict
+
+    # Diccionario: (año, mes) -> id_usuario -> {'ganados':..., 'perdidos':..., 'empates':...}
+    stats_por_mes = defaultdict(lambda: defaultdict(lambda: {'ganados':0,'perdidos':0,'empates':0}))
+
+    # Leer resultados
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for linea in f:
+                linea = linea.strip()
+                if not linea:
+                    continue
+                partes = linea.split(",")
+                if len(partes) < 3:
+                    continue
+                uid, resultado, fecha_str = partes
+                uid = int(uid)
+                fecha = datetime.datetime.strptime(fecha_str, "%Y-%m-%d")
+                mes = (fecha.year, fecha.month)
+
+                if resultado == "Ganó":
+                    stats_por_mes[mes][uid]['ganados'] += 1
+                elif resultado == "Perdió":
+                    stats_por_mes[mes][uid]['perdidos'] += 1
+                elif resultado == "Empató":
+                    stats_por_mes[mes][uid]['empates'] += 1
+    except FileNotFoundError:
+        return {}
+
+    # Convertir a lista de jugadores con puntos y promedio
+    ranking_por_mes = {}
+    usuarios_info = cargar_usuarios()  # lista de todos los usuarios
+
+    for mes, usuarios_stats in stats_por_mes.items():
+        jugadores = []
+        for u in usuarios_info:
+            uid = u['id']
+            nombre = u['nombre']
+            stats = usuarios_stats.get(uid, {'ganados':0,'perdidos':0,'empates':0})
+            puntos = stats['ganados']*3 + stats['empates']
+            partidos = stats['ganados'] + stats['perdidos'] + stats['empates']
             promedio = puntos / partidos if partidos > 0 else 0
-
             jugadores.append({
                 "id": uid,
                 "nombre": nombre,
-                "ganados": ganados,
-                "perdidos": perdidos,
-                "empates": empates,
+                "ganados": stats['ganados'],
+                "perdidos": stats['perdidos'],
+                "empates": stats['empates'],
                 "puntos": puntos,
                 "promedio": promedio
             })
+        jugadores.sort(key=lambda j: j["promedio"], reverse=True)
+        ranking_por_mes[mes] = jugadores
 
-    # Ordenar por promedio descendente
-    jugadores.sort(key=lambda j: j["promedio"], reverse=True)
-    return jugadores
+    return ranking_por_mes
 
+
+def cargar_usuarios(path="./utils/regist/usuarios.txt"):
+    """
+    Devuelve una lista de diccionarios con los datos de los usuarios:
+    id, nombre
+    """
+    usuarios = []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for linea in f:
+                linea = linea.strip()
+                if not linea:
+                    continue
+                partes = linea.split(",")
+                if len(partes) < 2:
+                    continue
+                uid = int(partes[0])
+                nombre = partes[1].strip()
+                usuarios.append({"id": uid, "nombre": nombre})
+    except FileNotFoundError:
+        pass
+    return usuarios
 
 def show_ranking():
-    ventana.blit(fondoMenuResponsive, (0, 0))
+    ranking_por_mes = cargar_estadisticas_por_mes()
+    if not ranking_por_mes:
+        return
 
-    titulo = fuente.render("Ranking de Jugadores", True, BLANCO)
-    title_x = (WIDTH - titulo.get_width()) // 2
-    ventana.blit(titulo, (title_x, 30))
-    
-    jugadores = cargar_usuarios()
+    meses = sorted(ranking_por_mes.keys())  # lista de (año, mes)
+    indice_mes = len(meses) - 1  # empezar por el último mes
 
-    headers = ["#", "Jugador", "Victorias", "Derrotas", "Empates", "Promedio"]
-    col_x = [60, 140, 360, 500, 640, 820]  # posiciones X para cada columna
-    start_y = 120
-    spacing = 40
+    running = True
+    while running:
+        ventana.blit(fondoMenuResponsive, (0,0))
 
-    pygame.draw.rect(ventana, (30, 30, 30), (50, start_y - 5, WIDTH - 100, spacing), border_radius=8)
+        año, mes = meses[indice_mes]
+        jugadores = ranking_por_mes[(año, mes)][:10]  # top 10
 
-    for j, header in enumerate(headers):
-        render = fuente_chica.render(header, True, ROJO)
-        ventana.blit(render, (col_x[j], start_y))
+        # Mostrar título con mes y año
+        titulo = fuente.render(f"Ranking {mes:02d}/{año}", True, BLANCO)
+        ventana.blit(titulo, ((WIDTH - titulo.get_width())//2, 30))
 
-    for i, jugador in enumerate(jugadores[:10], start=1): 
-        fila_y = start_y + i * spacing
-        bg_color = (40, 40, 40) if i % 2 == 0 else (25, 25, 25)
-        pygame.draw.rect(ventana, bg_color, (50, fila_y - 5, WIDTH - 100, spacing), border_radius=6)
+        # Columnas
+        headers = ["#", "Jugador", "Victorias", "Derrotas", "Empates", "Puntos", "Promedio"]
+        col_widths = [60, 220, 100, 100, 100, 100, 100]
+        tabla_width = sum(col_widths)
+        tabla_x = (WIDTH - tabla_width)//2
+        col_x = [tabla_x]
+        for w in col_widths[:-1]:
+            col_x.append(col_x[-1]+w)
 
-        if i == 1:
-            color = (255, 215, 0)  # oro
-        elif i == 2:
-            color = (192, 192, 192)  # plata
-        elif i == 3:
-            color = (205, 127, 50)  # bronce
-        else:
+        start_y = 100
+        spacing = 40
+
+        # Dibujar encabezado
+        pygame.draw.rect(ventana, (30,30,30), (tabla_x,start_y-5,tabla_width,spacing), border_radius=8)
+        for j, header in enumerate(headers):
+            render = fuente_chica.render(header, True, ROJO)
+            ventana.blit(render, (col_x[j], start_y))
+
+        # Dibujar filas
+        for i, jugador in enumerate(jugadores, start=1):
+            fila_y = start_y + i*spacing
+            bg_color = (40,40,40) if i%2==0 else (25,25,25)
+            pygame.draw.rect(ventana, bg_color, (tabla_x,fila_y-5,tabla_width,spacing), border_radius=6)
+
             color = BLANCO
+            if i == 1:
+                color = (255,215,0)
+            elif i == 2:
+                color = (192,192,192)
+            elif i == 3:
+                color = (205,127,50)
 
-        datos = [
-            str(i),
-            jugador["nombre"],
-            str(jugador["ganados"]),
-            str(jugador["perdidos"]),
-            str(jugador["empates"]),
-            f"{jugador['promedio']:.2f}"
-        ]
+            datos = [
+                str(i),
+                jugador["nombre"],
+                str(jugador["ganados"]),
+                str(jugador["perdidos"]),
+                str(jugador["empates"]),
+                str(jugador["puntos"]),
+                f"{jugador['promedio']:.2f}"
+            ]
+            for j, dato in enumerate(datos):
+                render = fuente_chica.render(dato, True, color)
+                ventana.blit(render, (col_x[j], fila_y))
 
-        for j, dato in enumerate(datos):
-            render = fuente_chica.render(dato, True, color)
-            ventana.blit(render, (col_x[j], fila_y))
+        pygame.display.flip()
 
-    pygame.display.flip()
+        # Eventos
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:  # mes anterior
+                    indice_mes = max(0, indice_mes - 1)
+                elif event.key == pygame.K_RIGHT:  # mes siguiente
+                    indice_mes = min(len(meses) - 1, indice_mes + 1)
+                elif event.key == pygame.K_ESCAPE:  # salir
+                    running = False
+                elif event.key == pygame.K_SPACE:  # salir con espacio
+                    return  # termina la función inmediatamente
+
+

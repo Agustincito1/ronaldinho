@@ -248,6 +248,7 @@ def gameShow(id_usuario):
 # -------------------
 # LOOP PRINCIPAL
 # -------------------
+ranking = False
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -272,8 +273,13 @@ while True:
                     elif opcion == 1:
                         registro_usuario()
                     elif opcion == 2:
+                        
                         show_ranking()
-                        pygame.time.wait(2000)
+                        ranking = True
+                        menu = False
+                        if(show_ranking() != True):
+                            ranking = False
+                            menu = True
                     elif opcion == 3:
                         pygame.quit()
                         sys.exit()
@@ -283,6 +289,7 @@ while True:
                     resetGame()
                     menu = True
                     paused = False
+                    ranking = False
                 elif event.key == pygame.K_p:
                     paused = not paused
                     if paused:
@@ -293,6 +300,11 @@ while True:
     if menu:
         show_menu_seleccion(opcion)
         continue
+
+    if ranking:
+        show_ranking()
+        continue
+
 
     if paused:
         ventana.blit(fondoResponsive, (0, 0))
