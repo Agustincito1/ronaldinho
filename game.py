@@ -220,16 +220,18 @@ def gameShow(id_usuario):
         import threading
 
         def registrar_mensaje_sync(id_usuario, eventVar):
+            print("generando")
 
             mensaje = asyncio.run(generar_mensaje(SacarUsuario(id_usuario), str(eventVar[0][0])))
 
             try:
+                print("intentando guardar")
                 conn = get_connection()  # tu función importada
                 cursor = conn.cursor()
                 sql = "INSERT INTO mensaje (mensaje) VALUES (%s)"
                 cursor.execute(sql, (mensaje,))
                 conn.commit()
-                print("✅ Mensaje registrado en DB:", texto)
+                print("✅ Mensaje registrado en DB:", mensaje)
             except Exception as e:
                 print("❌ Error al registrar mensaje:", e)
             finally:
