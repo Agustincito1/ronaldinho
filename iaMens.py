@@ -35,4 +35,3 @@ async def generar_mensaje(usuario, evento):
 
 #No se si es tan factible
 
-#

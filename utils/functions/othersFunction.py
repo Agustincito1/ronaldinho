@@ -33,3 +33,16 @@ def leerRegistros(id):
 
 
 
+# Funciones de físicas y reset
+def fisicas(jugador, bot, pelota):
+    if jugador.player_hitbox.colliderect(bot.bot_hitbox):
+        empuje = 5
+        if jugador.player_rect.centerx < bot.bot_rect.centerx:
+            jugador.player_rect.x -= empuje
+        else:
+            jugador.player_rect.x += empuje
+    jugador.update("user")
+    bot.update("bot")
+    pelota.update()
+    pelota.colision(bot, "bot")
+    pelota.colision(jugador, "")

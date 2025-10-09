@@ -1,10 +1,8 @@
 import pygame
 pygame.init()
-from config import BLANCO, WIDTH, HEIGHT, ventana, ROJO, menu_opciones, fondoMenuResponsive, fuente, fuente_chica
-from utils.functions.othersFunction import SacarUsuario
+from config import BLANCO, WIDTH, HEIGHT, ventana, ROJO, menu_opciones, fondoMenuResponsive, fuente, fuente_chica, logoMenuResponsive, link_text, link_render, link_rect
 
 def draw_title(texto, fuente, pos, color_principal=BLANCO, color_sombra=(0,0,0)):
-
     sombra = fuente.render(texto, True, color_sombra)
     ventana.blit(sombra, (pos[0]+3, pos[1]+3))  
     
@@ -15,36 +13,62 @@ def draw_title(texto, fuente, pos, color_principal=BLANCO, color_sombra=(0,0,0))
     principal = fuente.render(texto, True, color_principal)
     ventana.blit(principal, pos)
 
-def show_menu_seleccion(opcion):
+
+
+def show_menu_seleccion(opcion, mouse_x, mouse_y):
     ventana.blit(fondoMenuResponsive, (0, 0))
+    # Dibujar logo si existe: centrar verticalmente y colocarlo hacia la izquierda (1/4 del ancho)
+    if logoMenuResponsive:
+        radio = min(WIDTH, HEIGHT) // 5
+        size = radio * 2
+        Imagen = pygame.transform.smoothscale(logoMenuResponsive, (size, size))
+        circular_surface = pygame.Surface((size, size), pygame.SRCALPHA)
+        mask = pygame.Surface((size, size), pygame.SRCALPHA)
+        pygame.draw.circle(mask, (255, 255, 255, 255), (radio, radio), radio)
+        circular_surface.blit(Imagen, (0, 0))
+        circular_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
-    titulo_texto = "Ronaldinho Soccer"
-    title_x = (WIDTH - fuente.size(titulo_texto)[0]) // 2
-    title_y = HEIGHT // 6
-    draw_title(titulo_texto, fuente, (title_x, title_y))
 
+        logo_x = (WIDTH // 4) - (logoMenuResponsive.get_width() // 2)
+        logo_y = (HEIGHT - logoMenuResponsive.get_height()) // 2
+        ventana.blit(circular_surface, (logo_x, logo_y))
+        
+
+    # Column start a la derecha para el título y las opciones (aprox. 55-60% del ancho)
+    right_start = int(WIDTH * 0.55)
     spacing = 60  
     start_y = HEIGHT // 3
 
     for i, texto_opcion in enumerate(menu_opciones):
 
-        color = ROJO if i == opcion else BLANCO
+        color = BLANCO
         opcion_render = fuente_chica.render(texto_opcion, True, color)
-        opcion_x = (WIDTH - opcion_render.get_width()) // 2
+        opcion_x = right_start + ((WIDTH - right_start) - opcion_render.get_width()) // 2
         opcion_y = start_y + i * spacing
-
         if i == opcion:
             padding = 10
             rect = pygame.Rect(opcion_x - padding, opcion_y - padding,
                                opcion_render.get_width() + 2*padding,
                                opcion_render.get_height() + 2*padding)
             pygame.draw.rect(ventana, (50, 0, 0), rect, border_radius=8) 
-        ventana.blit(opcion_render, (opcion_x, opcion_y))
+        ventana.blit(opcion_render, (opcion_x, opcion_y));
 
-    indicador = fuente_chica.render("Usa ↑ ↓ para moverte, ESPACIO para confirmar", True, BLANCO)
-    ventana.blit(indicador, ((WIDTH - indicador.get_width()) // 2, start_y + len(menu_opciones)*spacing + 20))
+    if link_rect.collidepoint(mouse_x, mouse_y):
+        link_color = (180, 220, 255)
+        link_render = fuente_chica.render(link_text, True, (180, 220, 255))
+    else:
+        link_color = (100, 150, 255)
+        link_render = fuente_chica.render(link_text, True, (100, 150, 255))
+
+    ventana.blit(link_render, link_rect)
 
     pygame.display.flip()
+
+
+
+
+
+
 
 from collections import defaultdict
 import datetime
@@ -143,6 +167,12 @@ def show_ranking():
     running = True
     while running:
         ventana.blit(fondoMenuResponsive, (0,0))
+
+        # Dibujar logo si existe
+        if logoMenuResponsive:
+            logo_x = (WIDTH - logoMenuResponsive.get_width()) // 2
+            logo_y = 20
+            ventana.blit(logoMenuResponsive, (logo_x, logo_y))
 
         año, mes = meses[indice_mes]
         jugadores = ranking_por_mes[(año, mes)][:10]  # top 10
