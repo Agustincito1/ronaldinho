@@ -1,0 +1,47 @@
+/* Ajustes generales */
+body {
+  font-family: 'Arial', sans-serif;
+}
+
+/* Navbar */
+.btn-volver {
+  color: #fff !important;
+  background: #007bff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+.btn-volver:hover {
+  background: #0056b3;
+}
+
+/* Header */
+.content-header h1 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Tarjetas (sobrescribir AdminLTE un poco) */
+.small-box {
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+}
+
+.small-box .inner h3 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .content-header h1 {
+    text-align: center;
+    font-size: 1.4rem;
+  }
+}
+
+#userId {
+  max-width: 200px;
+}
+

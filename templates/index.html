@@ -1,28 +1,16 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <title>Mensajes</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styleINd.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu</title>
 </head>
 <body>
-  <header>
-    <h1>Lista de mensajes</h1>
-  </header>
-  <main>
-      {% if mensajes %}
-        <ul>
-          {% for m in mensajes %}
-            <li>{{ m.mensaje }}</li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No hay mensajes en la base de datos.</p>
-      {% endif %}
-  </main>
-  <footer>
-    Pagina creada por Agustin Lazaro Ardeola De Olivera
-  </footer>
-
+  <h1>Menu</h1>
+  <ul>
+    <li><a href="{{ url_for('mensajes') }}">Ver mensajes de la IA</a></li>
+    <li><a href="{{ url_for('estadisticas') }}">Estadisticas del juego</a></li>
+  </ul>
 </body>
 </html>

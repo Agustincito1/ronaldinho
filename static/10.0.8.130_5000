@@ -1,0 +1,92 @@
+10.0.8.130:5000
+
+5000
+8000
+
+
+registro en word 
+
+recambiar el resultado de todo
+
+economia circular 
+
+
+titulo : ronaldinho soccer 64
+
+objetivo: pelotear
+
+
+estilo del juego modificar 
+mejorar bot
+cambiar la forma de ver los registros matrix 2x2
+
+
+
+estadisticas para 
+
+
+¡Ah, perfecto! Entonces buscamos **estadísticas generales** que no dependan de cada partida específica, sino que resuman el desempeño global del jugador frente al bot. Para mostrar en **AdminLTE** en tu web, te recomiendo estas métricas:
+
+---
+
+### **1. Partidas totales**
+
+* **Total de partidas jugadas**
+* **Total de victorias del usuario**
+* **Total de derrotas**
+* **Total de empates**
+* **Porcentaje de victorias** (fácil de mostrar con un número o gráfico de dona)
+
+---
+
+### **2. Rachas**
+
+* **Mayor racha de victorias**
+* **Mayor racha de derrotas**
+
+Se pueden mostrar con **small boxes o tarjetas** en AdminLTE.
+
+---
+
+### **3. Movimientos más usados**
+
+* **Movimiento más usado por el usuario**
+* **Movimiento más efectivo** (el que más victorias da)
+
+Esto también es un dato global, no necesita historial detallado.
+
+---
+
+### **4. Eficiencia general**
+
+* **Porcentaje de victorias global** = `(total victorias / total partidas) * 100`
+* **Porcentaje de derrotas global** = `(total derrotas / total partidas) * 100`
+
+Se puede mostrar con **gráfico circular / dona** para que quede visual.
+
+---
+
+### **5. Visualización sugerida en AdminLTE**
+
+* **Fila 1 (InfoBoxes)**:
+
+  * Total partidas
+  * Victorias
+  * Derrotas
+  * Empates
+
+* **Fila 2 (Gráfico circular)**:
+
+  * Proporción victorias / derrotas / empates
+
+* **Fila 3 (Small Boxes)**:
+
+  * Mayor racha de victorias
+  * Mayor racha de derrotas
+  * Movimiento más usado
+
+---
+
+Si querés, puedo hacerte un **ejemplo de HTML + CSS con AdminLTE** listo para mostrar estas **estadísticas generales**, con gráficos y tarjetas ya listas.
+
+¿Querés que haga eso?

@@ -1,78 +1,98 @@
-/* Reset básico */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: Arial, sans-serif;
 }
 
-/* Tipografía */
+/* Fondo y layout */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f6f8;
-  color: #333;
-  line-height: 1.6;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  color: #fff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  padding: 20px;
 }
 
-/* Encabezado */
-header {
-  background-color: #1e88e5;
-  color: white;
-  padding: 20px 0;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
+/* Header */
 header h1 {
   font-size: 2rem;
-}
-
-/* Contenido principal */
-main {
-  flex: 1;
-  padding: 40px 20px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-  margin-top: 20px;
-}
-
-li {
-  background-color: white;
-  margin-bottom: 15px;
-  padding: 15px 20px;
-  border-left: 6px solid #1e88e5;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease;
-}
-
-li:hover {
-  transform: translateX(5px);
-}
-
-/* Mensaje cuando no hay mensajes */
-main p {
-  background-color: #ffecb3;
-  padding: 15px;
-  border-left: 6px solid #ffc107;
-  border-radius: 4px;
-  color: #795548;
-  font-weight: bold;
-}
-
-/* Pie de página */
-footer {
+  margin-bottom: 20px;
   text-align: center;
-  padding: 20px;
-  background-color: #e0e0e0;
-  color: #555;
+}
+
+/* Lista de mensajes */
+.mensaje-lista {
+  list-style: none;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 20px;
+}
+
+.mensaje-lista li {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  text-align: left;
+  word-wrap: break-word;
+  transition: background 0.3s ease;
+}
+
+.mensaje-lista li:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Texto cuando no hay mensajes */
+.no-mensaje {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Botón volver */
+.btn-volver {
+  display: inline-block;
+  padding: 12px 20px;
+  background: #ff6f61;
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-volver:hover {
+  background: #ff4b47;
+  transform: scale(1.05);
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+  text-align: center;
   font-size: 0.9rem;
-  border-top: 1px solid #ccc;
+  opacity: 0.8;
+  padding-top: 15px;
+}
+
+/* Responsividad */
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .mensaje-lista li {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  .btn-volver {
+    width: 100%;
+    text-align: center;
+  }
 }

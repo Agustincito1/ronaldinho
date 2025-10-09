@@ -1,7 +1,7 @@
 import pygame
 pygame.init()
 pygame.display.set_caption("Ronaldinho")
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1200, 600
 NEGRO = (0, 0, 0)
 ROJO = (0, 0, 255)
 BLANCO = (255, 255, 255)

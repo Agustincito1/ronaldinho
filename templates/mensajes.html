@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <title>Mensajes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <header>
+    <h1>📩 Lista de mensajes</h1>
+  </header>
+  <main>
+      {% if mensajes %}
+        <ul class="mensaje-lista">
+          {% for m in mensajes %}
+            <li>{{ m.mensaje }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="no-mensaje">No hay mensajes en la base de datos.</p>
+      {% endif %}
+      <a class="btn-volver" href="{{ url_for('index') }}">⬅ Volver al menú</a>
+  </main>
+  <footer>
+    <p>Página creada por Agustin Lazaro Ardeola De Olivera</p>
+  </footer>
+</body>
+</html>

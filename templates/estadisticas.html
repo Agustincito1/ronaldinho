@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estadísticas del Usuario</title>
+  <!-- AdminLTE CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <h1>Estadísticas del Usuario</h1>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Input para ID -->
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <div class="input-group">
+              <input type="number" id="userId" class="form-control" placeholder="Ingrese ID de usuario">
+              <button class="btn btn-primary" onclick="cargarEstadisticas()">Buscar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Boxes -->
+        <div class="row">
+          <div class="col-lg-3 col-6">
+            <div class="info-box bg-info">
+              <span class="info-box-icon"><i class="fas fa-gamepad"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">Partidas Jugadas</span>
+                <span class="info-box-number" id="totalPartidas">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="info-box bg-success">
+              <span class="info-box-icon"><i class="fas fa-trophy"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">Victorias</span>
+                <span class="info-box-number" id="victorias">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="info-box bg-danger">
+              <span class="info-box-icon"><i class="fas fa-times"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">Derrotas</span>
+                <span class="info-box-number" id="derrotas">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="info-box bg-secondary">
+              <span class="info-box-icon"><i class="fas fa-equals"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">Empates</span>
+                <span class="info-box-number" id="empates">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfico mensual -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">Resumen por Mes</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="graficoMensual"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- AdminLTE JS -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- FontAwesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<script>
+let grafico; // variable global para el gráfico
+
+function cargarEstadisticas() {
+  const userId = document.getElementById('userId').value;
+  if (!userId) {
+    alert("Ingrese un ID de usuario");
+    return;
+  }
+
+  // Aquí iría la llamada a tu backend para obtener los datos reales
+  // Por ahora simulamos datos
+  
+  const datosUsuario = {
+    totalPartidas: 50,
+    victorias: 25,
+    derrotas: 20,
+    empates: 5,
+    resumenMeses: [2, 5, 3, 6, 4, 7, 8, 5, 3, 4, 2, 1] // partidas por mes
+  };
+
+  // Actualizar info boxes
+  document.getElementById('totalPartidas').innerText = datosUsuario.totalPartidas;
+  document.getElementById('victorias').innerText = datosUsuario.victorias;
+  document.getElementById('derrotas').innerText = datosUsuario.derrotas;
+  document.getElementById('empates').innerText = datosUsuario.empates;
+
+  // Actualizar gráfico
+  const ctx = document.getElementById('graficoMensual').getContext('2d');
+  if (grafico) grafico.destroy(); // destruir gráfico anterior
+  grafico = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+      datasets: [{
+        label: 'Partidas jugadas',
+        data: datosUsuario.resumenMeses,
+        backgroundColor: '#007bff'
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          precision:0
+        }
+      }
+    }
+  });
+}
+</script>
+
+</body>
+</html>
