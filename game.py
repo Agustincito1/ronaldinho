@@ -10,7 +10,7 @@ from conn import get_connection
 from utils.functions.gameObject import Personaje, Arco, Pelota, Contador, arcoDibujo
 from utils.functions.functionMenu import show_menu_seleccion, show_ranking
 from utils.functions.functionRegister import login_usuario, registro_usuario, registrar_resultado
-from utils.functions.registroColisiones import registroContinuo, resumenCol
+from utils.functions.registroColisiones import registroContinuo
 from config import BLANCO, WIDTH, HEIGHT, ventana, ROJO, menu_opciones, opcion, fondoResponsive, fuente_chica, fuente, clock, FPS, duracion_partido
 from iaMens import generar_mensaje
 from utils.functions.othersFunction import SacarUsuario 
@@ -21,8 +21,6 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pkg_resources")
 # Inicializamos pygame
 pygame.init()
 
-# Resumen inicial de colisiones
-resumenCol()
 
 # Crear personajes y objetos
 jugador = Personaje("usuario")
@@ -220,12 +218,10 @@ def gameShow(id_usuario):
         import threading
 
         def registrar_mensaje_sync(id_usuario, eventVar):
-            print("generando")
 
             mensaje = asyncio.run(generar_mensaje(SacarUsuario(id_usuario), str(eventVar[0][0])))
 
             try:
-                print("intentando guardar")
                 conn = get_connection()  # tu función importada
                 cursor = conn.cursor()
                 sql = "INSERT INTO mensaje (mensaje) VALUES (%s)"
