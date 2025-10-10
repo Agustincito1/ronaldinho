@@ -28,7 +28,6 @@ contador.stop(pygame.time.get_ticks())
 
 # Variables globales
 menu = True
-paused = False
 usuario_actual = None
 goles_bot = 0
 goles_jugador = 0
@@ -131,20 +130,7 @@ while True:
                 elif opcion == 3:
                     pygame.quit()
                     sys.exit()
-        else:  # juego en curso
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    resetGame(goles_bot, goles_jugador, contador, jugador, bot, pelota)
-                    menu = True
-                    paused = False
-                    ranking = False
-                elif event.key == pygame.K_p:
-                    paused = not paused
-                    if paused:
-                        contador.stop(pygame.time.get_ticks())
-                    else:
-                        contador.resume(pygame.time.get_ticks())
-
+           
     # =======================
     # CONTROL DE CURSOR GLOBAL
     # =======================
@@ -184,26 +170,7 @@ while True:
         show_ranking()
         continue
 
-    # =======================
-    # PAUSA
-    # =======================
-    if paused:
-        ventana.blit(fondoResponsive, (0, 0))
-        texto = fuente.render("|| Juego en Pausa", True, ROJO)
-        ventana.blit(texto, ((WIDTH - texto.get_width()) // 2, HEIGHT // 2))
-        marcador = fuente_chica.render(f"{goles_jugador}  -  {goles_bot}", True, ROJO)
-        ventana.blit(marcador, ((WIDTH - marcador.get_width()) // 2, 30))
-        pygame.display.flip()
-        clock.tick(FPS)
-        continue
 
-    # =======================
-    # JUEGO EN CURSO
-    # =======================
-    keys = pygame.key.get_pressed()
-    jugador.mover(keys)
-    bot.mover_bot(pelota)
-    fisicas(jugador, bot, pelota)
     menu = gameShow(usuario_actual, goles_bot, goles_jugador, last_event_time,
                     jugador, bot, pelota, contador, arco_izquierdo, arco_derecho)
 

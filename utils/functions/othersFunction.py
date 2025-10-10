@@ -1,5 +1,6 @@
 import random
-
+import pygame
+from config import FPS, clock
 def SacarUsuario(id):
     # Leer usuarios
     usuario = ""
@@ -31,18 +32,50 @@ def leerRegistros(id):
     return registros
 
 
-
-
-# Funciones de físicas y reset
-def fisicas(jugador, bot, pelota):
-    if jugador.player_hitbox.colliderect(bot.bot_hitbox):
+def fisicas(jugador, bot, pelota, keys):
+    
+    # 1. Colisión Personaje vs. Personaje (Separación Mutua)
+    if jugador.hitbox.colliderect(bot.hitbox):
         empuje = 5
-        if jugador.player_rect.centerx < bot.bot_rect.centerx:
-            jugador.player_rect.x -= empuje
+        if jugador.rect.centerx < bot.rect.centerx:
+            jugador.rect.x -= empuje
+            bot.rect.x += empuje
         else:
-            jugador.player_rect.x += empuje
-    jugador.update("user")
-    bot.update("bot")
-    pelota.update()
-    pelota.colision(bot, "bot")
-    pelota.colision(jugador, "")
+            jugador.rect.x += empuje
+            bot.rect.x -= empuje
+            
+    # 2. Colisión Jugador vs. Pelota (Evitar Traspaso - Mueve al JUGADOR)
+    if jugador.hitbox.colliderect(pelota.pelota_rect):
+        dx = (jugador.hitbox.centerx - pelota.pelota_rect.centerx)
+        min_dist = jugador.hitbox.width / 2 + pelota.pelota_rect.width / 2
+        
+        if abs(dx) < min_dist:
+            overlap = min_dist - abs(dx)
+            
+            if dx > 0:
+                jugador.rect.x += overlap
+            else:
+                jugador.rect.x -= overlap
+            
+    # 3. Colisión Bot vs. Pelota (Evitar Traspaso - Mueve al BOT)
+    if bot.hitbox.colliderect(pelota.pelota_rect):
+        dx = (bot.hitbox.centerx - pelota.pelota_rect.centerx)
+        min_dist = bot.hitbox.width / 2 + pelota.pelota_rect.width / 2
+        
+        if abs(dx) < min_dist:
+            overlap = min_dist - abs(dx)
+            
+            if dx > 0:
+                bot.rect.x += overlap
+            else:
+                bot.rect.x -= overlap
+
+    # 4. Colisión y manejo de impacto de la Pelota (Aplica la velocidad a la pelota)
+    colision_con_jugador = pelota.check_colision(jugador, "jugador")
+    if colision_con_jugador == "jugador":
+        es_patada = keys[pygame.K_SPACE]
+        pelota.manejar_impacto(jugador, es_patada)
+        
+    colision_con_bot = pelota.check_colision(bot, "bot") 
+    if colision_con_bot == "bot":
+        pelota.manejar_impacto(bot, es_patada=True)

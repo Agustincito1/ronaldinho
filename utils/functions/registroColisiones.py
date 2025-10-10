@@ -9,25 +9,29 @@ def registroContinuo(usuario, id, pelota, fecha, bot, arco_derecho, arco_izquier
     if usuario is None:
         return
     eventos = []
-    if usuario.player_rect.colliderect(pelota.pelota_rect):
-        x, y = usuario.player_rect.center
+    
+    # 1. Colisión con la pelota
+    if usuario.rect.colliderect(pelota.pelota_rect):
+        x, y = usuario.rect.center
         eventos.append(("Pelota", x, y))
-    if usuario.player_rect.colliderect(arco_izquierdo):
-        x, y = usuario.player_rect.center
-        eventos.append(("Gol", x, y))
-    if usuario.player_rect.colliderect(bot.bot_hitbox):
-        x, y = usuario.player_rect.center
+        
+    # 2. Colisión con el Bot
+    if usuario.rect.colliderect(bot.hitbox):
+        x, y = usuario.rect.center
         eventos.append(("Bot", x, y))
-    if usuario.player_rect.colliderect(arco_derecho.rect):
-        x, y = usuario.player_rect.center
+        
+    # 3. Colisión con Arco Derecho (usando el rectángulo del área de gol)
+    if usuario.rect.colliderect(arco_derecho.goal_area_rect):
+        x, y = usuario.rect.center
         eventos.append(("ArcoDerecho", x, y))
-    if usuario.player_rect.colliderect(arco_izquierdo.rect):
-        x, y = usuario.player_rect.center
+        
+    # 4. Colisión con Arco Izquierdo (usando el rectángulo del área de gol)
+    if usuario.rect.colliderect(arco_izquierdo.goal_area_rect):
+        x, y = usuario.rect.center
         eventos.append(("ArcoIzquierdo", x, y))
 
     for evento, x, y in eventos:
         with open("./utils/regist/registro.txt", "a", encoding="utf-8") as f:
             f.write(f"{id},{fecha},{evento},{x},{y}\n")
     return eventos
-
 

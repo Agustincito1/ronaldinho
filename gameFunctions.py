@@ -1,9 +1,9 @@
-
 import sys
 from iaMens import generar_mensaje
-from config import WIDTH, HEIGHT, duracion_partido, fuente, fuente_chica, fondoResponsive, BLANCO, ROJO, FPS, ventana, clock
+from config import WIDTH, HEIGHT, duracion_partido, fuente, fuente_chica, fondoResponsive, BLANCO, ROJO, FPS, ventana, clock, arcoImg, fuente_chica2,AZUL_OSCURO
 from utils.functions.functionRegister import registrar_resultado
 from utils.functions.registroColisiones import registroContinuo
+from utils.functions.othersFunction import fisicas
 from conn import get_connection
 import pygame
 import threading
@@ -20,183 +20,356 @@ def resetGame(goles_bot, goles_jugador, contador, jugador, bot, pelota):
     goles_bot = 0
     goles_jugador = 0
     pelota.reset_pelota()
-    bot.bot_rect.x = WIDTH - 200
-    bot.bot_rect.y = HEIGHT - 50
-    jugador.player_rect.x = 100
-    jugador.player_rect.y = HEIGHT - 50
+    bot.rect.x = WIDTH - 200
+    bot.rect.y = HEIGHT - bot.rect.height
+    jugador.rect.x = 100
+    jugador.rect.y = HEIGHT - jugador.rect.height 
     contador.tiempo_restante = duracion_partido
     contador.reset(pygame.time.get_ticks())
     contador.stop(pygame.time.get_ticks())
 
 
+try:
+    _arco_img_base = pygame.image.load('./utils/imgs/arcos.png').convert_alpha() # Nombre de archivo de tu imagen de portería
+    # Escalar la imagen del arco si es necesario. Ajusta el tamaño según tu juego.
+    _arco_w, _arco_h = 200, 150 # Ejemplo de tamaño, ajusta según sea necesario
+    _arco_img_base = pygame.transform.scale(_arco_img_base, (_arco_w, _arco_h))
+except pygame.error as e:
+    print(f"Error al cargar la imagen del arco: {e}")
+    sys.exit()
+ARCO_Y_POS = HEIGHT - _arco_h 
+arco_img_original = _arco_img_base
+arco_img_reflejada = pygame.transform.flip(_arco_img_base, True, False)
+arco_izquierdo_rect = arco_img_original.get_rect(topleft=(0, ARCO_Y_POS))# Ajusta Y si quieres que estén más abajo
+arco_derecho_rect =  arco_img_reflejada.get_rect(topright=(WIDTH, ARCO_Y_POS)) # Ajusta Y si quieres que estén más abajo
 def game_over_screen(resultado, goles_jugador, goles_bot, contador):
-    
     opciones = ["Jugar de nuevo", "Volver al menú principal"]
     seleccion = 0
     running = True
-    
+
     while running:
+        mouse_pos = pygame.mouse.get_pos()
+
+        # Fondo del juego
         ventana.blit(fondoResponsive, (0, 0))
-        
-        # Mensaje principal
-        mensaje = fuente.render(f"¡{resultado}!", True, BLANCO)
-        ventana.blit(mensaje, ((WIDTH - mensaje.get_width()) // 2, HEIGHT // 4))
-        
-        # Marcador final
-        marcador = fuente_chica.render(f"{goles_jugador}  -  {goles_bot}", True, BLANCO)
-        ventana.blit(marcador, ((WIDTH - marcador.get_width()) // 2, HEIGHT // 4 + 50))
-        
-        # Mostrar opciones
+
+        # Capa semitransparente azul oscuro
+        overlay = pygame.Surface((WIDTH, HEIGHT))
+        overlay.fill(AZUL_OSCURO)
+        overlay.set_alpha(180)
+        ventana.blit(overlay, (0, 0))
+
+        # Título con sombra
+        titulo = fuente.render(f"¡{resultado}!", True, BLANCO)
+        sombra = fuente.render(f"¡{resultado}!", True, (0, 0, 0))
+        ventana.blit(sombra, ((WIDTH - titulo.get_width()) // 2 + 3, HEIGHT // 4 + 3))
+        ventana.blit(titulo, ((WIDTH - titulo.get_width()) // 2, HEIGHT // 4))
+
+        # Marcador de goles
+        marcador = fuente_chica.render(f"{goles_jugador} - {goles_bot}", True, BLANCO)
+        ventana.blit(marcador, ((WIDTH - marcador.get_width()) // 2, HEIGHT // 4 + 70))
+
+        opcion_rects = []
         for i, texto in enumerate(opciones):
-            color = ROJO if i == seleccion else BLANCO
-            opcion_render = fuente_chica.render(texto, True, color)
-            ventana.blit(opcion_render, ((WIDTH - opcion_render.get_width()) // 2, HEIGHT // 2 + i * 40))
-        
+            # Definir rectángulo del botón
+            rect_x = WIDTH // 2 - 150
+            rect_y = HEIGHT // 2 + i * 80
+            rect_w = 300
+            rect_h = 50
+            rect = pygame.Rect(rect_x, rect_y, rect_w, rect_h)
+            opcion_rects.append(rect)
+
+            # Hover con el mouse
+            if rect.collidepoint(mouse_pos):
+                color_fondo = BLANCO
+                color_texto = AZUL_OSCURO
+                seleccion = i
+            else:
+                color_fondo = (0, 0, 0, 0)
+                color_texto = BLANCO
+
+            # Dibujar botón
+            pygame.draw.rect(ventana, color_fondo, rect, border_radius=15)
+            pygame.draw.rect(ventana, BLANCO, rect, 2, border_radius=15)
+
+            # Texto centrado en el botón
+            texto_render = fuente_chica.render(texto, True, color_texto)
+            ventana.blit(texto_render, texto_render.get_rect(center=rect.center))
+
+        # Indicador sobre la opción seleccionada
+        indicador_y = HEIGHT // 2 + seleccion * 80 - 10
+        pygame.draw.rect(ventana, BLANCO, (WIDTH // 2 - 50, indicador_y, 100, 3), border_radius=2)
+
         pygame.display.flip()
-        
-        # Eventos
+
+        # Manejo de eventos
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     seleccion = (seleccion - 1) % len(opciones)
                 elif event.key == pygame.K_DOWN:
                     seleccion = (seleccion + 1) % len(opciones)
                 elif event.key == pygame.K_RETURN:
+                    return "replay" if seleccion == 0 else "menu"
 
-                    if seleccion == 0:
-                        return "replay"  # Jugar de nuevo
-                    else:
-                        
-                        return "menu"    # Volver al menú
-        
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    for i, rect in enumerate(opcion_rects):
+                        if rect.collidepoint(mouse_pos):
+                            return "replay" if i == 0 else "menu"
+
         clock.tick(FPS)
 
 
+def pause_menu():
+    opciones = ["Continuar", "Volver al menú principal"]
+    seleccion = 0
+    running = True
+
+    while running:
+        mouse_pos = pygame.mouse.get_pos()
+
+        # Fondo del juego
+        ventana.blit(fondoResponsive, (0, 0))
+
+        # Capa semitransparente azul oscuro
+        overlay = pygame.Surface((WIDTH, HEIGHT))
+        overlay.fill(AZUL_OSCURO)
+        overlay.set_alpha(180)
+        ventana.blit(overlay, (0, 0))
+
+        # Título con sombra
+        titulo = fuente.render("|| PAUSA", True, BLANCO)
+        sombra = fuente.render("|| PAUSA", True, (0, 0, 0))
+        ventana.blit(sombra, ((WIDTH - titulo.get_width()) // 2 + 3, HEIGHT // 4 + 3))
+        ventana.blit(titulo, ((WIDTH - titulo.get_width()) // 2, HEIGHT // 4))
+
+        opcion_rects = []
+        for i, texto in enumerate(opciones):
+            # Hover
+            rect_x = WIDTH // 2 - 150
+            rect_y = HEIGHT // 2 + i * 80
+            rect_w = 300
+            rect_h = 50
+            rect = pygame.Rect(rect_x, rect_y, rect_w, rect_h)
+            opcion_rects.append(rect)
+
+            if rect.collidepoint(mouse_pos):
+                color_fondo = BLANCO
+                color_texto = AZUL_OSCURO
+                seleccion = i
+            else:
+                color_fondo = (0, 0, 0, 0)
+                color_texto = BLANCO
+
+            # Fondo del botón
+            pygame.draw.rect(ventana, color_fondo, rect, border_radius=15)
+            pygame.draw.rect(ventana, BLANCO, rect, 2, border_radius=15)
+
+            # Texto centrado
+            texto_render = fuente_chica.render(texto, True, color_texto)
+            ventana.blit(texto_render, texto_render.get_rect(center=rect.center))
+
+        # Indicador pequeño (barra blanca arriba del botón seleccionado)
+        indicador_y = HEIGHT // 2 + seleccion * 80 - 10
+        pygame.draw.rect(ventana, BLANCO, (WIDTH // 2 - 50, indicador_y, 100, 3), border_radius=2)
+
+        pygame.display.flip()
+
+        # Eventos
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    seleccion = (seleccion - 1) % len(opciones)
+                elif event.key == pygame.K_DOWN:
+                    seleccion = (seleccion + 1) % len(opciones)
+                elif event.key == pygame.K_p or event.key == pygame.K_ESCAPE:
+                    return "continue"
+                elif event.key == pygame.K_RETURN:
+                    return "continue" if seleccion == 0 else "menu"
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    for i, rect in enumerate(opcion_rects):
+                        if rect.collidepoint(mouse_pos):
+                            return "continue" if i == 0 else "menu"
+
+        clock.tick(FPS)
 
 
-
-# Mostrar juego y detectar goles
 def gameShow(id_usuario, goles_bot, goles_jugador, last_event_time, jugador, bot, pelota, contador, arco_izquierdo, arco_derecho):
-    isGol = False
-    tiempo_actual = pygame.time.get_ticks()
-    contador.resume(tiempo_actual)
-    contador.update(tiempo_actual)
-    
-    
-    # Fin del partido
-    if contador.tiempo_restante <= 0:
-        ventana.blit(fondoResponsive, (0, 0))
-        if goles_jugador > goles_bot:
-            mensaje = fuente.render("¡Jugador gana!", True, ROJO)
-            registrar_resultado(id_usuario, "Ganó")
-        elif goles_bot > goles_jugador:
-            mensaje = fuente.render("¡Bot gana!", True, ROJO)
-            registrar_resultado(id_usuario, "Perdió")
-        else:
-            mensaje = fuente.render("¡Empate!", True, ROJO)
-            registrar_resultado(id_usuario, "Empató")
-        ventana.blit(mensaje, ((WIDTH - mensaje.get_width()) // 2, HEIGHT // 2))
-        marcador = fuente_chica.render(f"{goles_jugador}  -  {goles_bot}", True, ROJO)
-        ventana.blit(marcador, ((WIDTH - marcador.get_width()) // 2, 30))
-        pygame.display.flip()
-        pygame.time.wait(2000)
-    
-    if contador.tiempo_restante <= 0:
-        ventana.blit(fondoResponsive, (0, 0))
-        if goles_jugador > goles_bot:
-            resultado = "Jugador gana"
-        elif goles_bot > goles_jugador:
-            resultado = "Bot gana"
-        else:
-            resultado = "Empate"
-   
-        accion = game_over_screen(resultado, goles_jugador, goles_bot, contador)
+    gameStart = True
+    pelota.pelota_rect.x = WIDTH // 2
+    pelota.pelota_rect.y = HEIGHT - 100
+    pelota.pelota_speed_x = 0
+    pelota.pelota_speed_y = 0
+    paused = False
 
-        if accion == "menu":
-            return True  # Volver al menú
+    while gameStart:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    if not paused:
+                        resetGame(goles_bot, goles_jugador, contador, jugador, bot, pelota)
+                        return True
+                elif event.key == pygame.K_p:
+                    paused = not paused
+                    if paused:
+                        contador.stop(pygame.time.get_ticks())
+                    else:
+                        contador.resume(pygame.time.get_ticks())
+
+        keys = pygame.key.get_pressed()
+        
+        if not paused:
+            jugador.mover(keys)
+            jugador.update() 
+            bot.mover_bot(pelota)
+            bot.update()
+            fisicas(jugador, bot, pelota, keys) 
+            pelota.update()
             
+            colision_con_jugador = pelota.check_colision(jugador, "jugador")
+            pelota_controlable = (abs(pelota.pelota_speed_x) < 5.0) and (abs(pelota.pelota_speed_y) < 5.0)
+            
+            if colision_con_jugador == "jugador":
+                es_patada = keys[pygame.K_SPACE]
+                pelota.manejar_impacto(jugador, es_patada)
+                
+            colision_con_bot = pelota.check_colision(bot, "bot") 
+            if colision_con_bot == "bot":
+                pelota.manejar_impacto(bot, es_patada=True)
+
+            pelota.update() 
+            
+            tiempo_actual = pygame.time.get_ticks()
+            contador.resume(tiempo_actual)
+            contador.update(tiempo_actual)
+            
+            if contador.tiempo_restante <= 0:
+                ventana.blit(fondoResponsive, (0, 0))
+                if goles_jugador > goles_bot:
+                    resultado = "Victoria del Jugador"
+                    registrar_resultado(id_usuario, "Ganó")
+                elif goles_bot > goles_jugador:
+                    resultado = "Victoria del Bot"
+                    registrar_resultado(id_usuario, "Perdió")
+                else:
+                    resultado = "Empate"
+                    registrar_resultado(id_usuario, "Empató")
+                
+                accion = game_over_screen(resultado, goles_jugador, goles_bot, contador)
+
+                if accion == "menu":
+                    return True
+                else:
+                    resetGame(goles_bot, goles_jugador, contador, jugador, bot, pelota)
+                    return False
+            
+                        
+           
+            ventana.blit(fondoResponsive, (0, 0))
+            ventana.blit(pelota.pelota_img, pelota.pelota_rect)
+            arco_izquierdo.draw(ventana)
+            arco_derecho.draw(ventana)
+            ventana.blit(jugador.image, jugador.rect)
+            ventana.blit(bot.image, bot.rect)
+
+            if jugador.rect.colliderect(arco_izquierdo.rect):
+                jugador.rect.left = arco_izquierdo.rect.right
+
+            if jugador.rect.colliderect(arco_derecho.rect):
+                jugador.rect.right = arco_derecho.rect.left
+
+            if bot.rect.colliderect(arco_izquierdo.rect):
+                bot.rect.left = arco_izquierdo.rect.right
+
+            if bot.rect.colliderect(arco_derecho.rect):
+                bot.rect.right = arco_derecho.rect.left
+
+            MARCADOR_W, MARCADOR_H = 150, 60
+            MARCADOR_X = (WIDTH - MARCADOR_W) // 2
+            MARCADOR_Y = 20
+            pygame.draw.rect(ventana, (10, 20, 30), (MARCADOR_X, MARCADOR_Y, MARCADOR_W, MARCADOR_H), border_radius=10)
+
+            marcador_texto = fuente.render(f"{goles_jugador} - {goles_bot}", True, BLANCO)
+            ventana.blit(marcador_texto, 
+                         (MARCADOR_X + (MARCADOR_W - marcador_texto.get_width()) // 2, 
+                          MARCADOR_Y + (MARCADOR_H - marcador_texto.get_height()) // 2))
+
+            CONTADOR_W, CONTADOR_H = 100, 40
+            CONTADOR_X = (WIDTH - CONTADOR_W) // 2
+            CONTADOR_Y = MARCADOR_Y + MARCADOR_H + 5 
+            pygame.draw.rect(ventana, (10, 20, 30), (CONTADOR_X, CONTADOR_Y, CONTADOR_W, CONTADOR_H), border_radius=10)
+
+            ventana.blit(contador.text, 
+                         (CONTADOR_X + (CONTADOR_W - contador.text.get_width()) // 2, 
+                          CONTADOR_Y + (CONTADOR_H - contador.text.get_height()) // 2))
+
+            isGol = False
+            mensaje_gol_texto = ""
+            
+            # ⚽️ CORRECCIÓN: USANDO EL RECTÁNGULO DEL ÁREA DE GOL
+            if arco_derecho.goal_area_rect.colliderect(pelota.pelota_rect):
+                isGol = True
+                goles_jugador += 1
+                contador.stop(pygame.time.get_ticks())
+                mensaje_gol_texto = "¡JUGADOR ANOTÓ!"
+                
+            elif arco_izquierdo.goal_area_rect.colliderect(pelota.pelota_rect):
+                isGol = True
+                goles_bot += 1
+                contador.stop(pygame.time.get_ticks())
+                mensaje_gol_texto = "¡BOT ANOTÓ!"
+
+            if isGol:
+                ALERTA_W, ALERTA_H = 600, 80 
+                ALERTA_X = (WIDTH - ALERTA_W) // 2
+                ALERTA_Y = CONTADOR_Y + CONTADOR_H + 10 
+                
+                pygame.draw.rect(ventana, (30, 30, 30), (ALERTA_X, ALERTA_Y, ALERTA_W, ALERTA_H), border_radius=15)
+                pygame.draw.rect(ventana, ROJO, (ALERTA_X+5, ALERTA_Y+5, ALERTA_W-10, ALERTA_H-10), 5, border_radius=15)
+                
+                mensaje_gol = fuente_chica.render(mensaje_gol_texto, True, BLANCO) 
+                ventana.blit(mensaje_gol, 
+                             (ALERTA_X + (ALERTA_W - mensaje_gol.get_width()) // 2, 
+                              ALERTA_Y + (ALERTA_H - mensaje_gol.get_height()) // 2))
+
+                pygame.display.flip()
+                pygame.time.wait(1500)
+                
+                pelota.pelota_rect.x = WIDTH // 2
+                pelota.pelota_rect.y = HEIGHT - 100
+                pelota.pelota_speed_x = 0
+                pelota.pelota_speed_y = 0
+                jugador.rect.x = 100
+                jugador.rect.y = HEIGHT - jugador.rect.height
+                bot.rect.x = WIDTH - 200
+                bot.rect.y = HEIGHT - bot.rect.height
+                contador.resume(pygame.time.get_ticks())
+
+            eventVar = registroContinuo(jugador, id_usuario, pelota, fecha, bot, arco_derecho, arco_izquierdo)
+            now = pygame.time.get_ticks()
+            pygame.display.flip()
+        
         else:
-            resetGame(goles_bot, goles_jugador, contador, jugador, bot, pelota)
-            return False  # Seguir jugando
+            accion = pause_menu() 
+            if accion == "continue":
+                paused = False
+                contador.resume(pygame.time.get_ticks())
+            elif accion == "menu":
+                resetGame(goles_bot, goles_jugador, contador, jugador, bot, pelota)
+                return True
 
-    # Dibujar escenario y objetos
-    ventana.blit(fondoResponsive, (0, 0))
-    ventana.blit(jugador.player_img, jugador.player_rect)
-    ventana.blit(bot.bot_img, bot.bot_rect)
-    ventana.blit(pelota.pelota_img, pelota.pelota_rect)
-    arco_izquierdo.draw(ventana)
-    arco_derecho.draw(ventana)
-
-    ventana.blit(contador.text, (WIDTH // 2 - contador.text.get_width() // 2, 70))
-    marcador = fuente_chica.render(f"{goles_jugador}  -  {goles_bot}", True, ROJO)
-    ventana.blit(marcador, ((WIDTH - marcador.get_width()) // 2, 30))
-
-    # Detectar goles
-    if arco_derecho.rect.colliderect(pelota.pelota_rect):
-        isGol = True
-        goles_jugador += 1
-        contador.stop(pygame.time.get_ticks())
-        ventana.blit(fondoResponsive, (0, 0))
-        mensaje = fuente.render("Jugador anotó!", True, ROJO)
-        ventana.blit(mensaje, ((WIDTH - mensaje.get_width()) // 2, HEIGHT // 2))
-    elif arco_izquierdo.rect.colliderect(pelota.pelota_rect):
-        isGol = True
-        goles_bot += 1
-        contador.stop(pygame.time.get_ticks())
-        ventana.blit(fondoResponsive, (0, 0))
-        mensaje = fuente.render("Bot anotó!", True, ROJO)
-        ventana.blit(mensaje, ((WIDTH - mensaje.get_width()) // 2, HEIGHT // 2))
-
-    if isGol:
-        marcador = fuente_chica.render(f"{goles_jugador}  -  {goles_bot}", True, ROJO)
-        ventana.blit(marcador, ((WIDTH - marcador.get_width()) // 2, 30))
-        pygame.display.flip()
-        pygame.time.wait(2000)
-        pelota.pelota_rect.x = WIDTH // 2
-        pelota.pelota_rect.y = HEIGHT - 100
-        pelota.pelota_speed_x = 0
-        pelota.pelota_speed_y = 0
-        jugador.player_rect.x = 100
-        jugador.player_rect.y = HEIGHT - jugador.player_rect.height
-        bot.bot_rect.x = WIDTH - 200
-        bot.bot_rect.y = HEIGHT - bot.bot_rect.height
-        contador.resume(pygame.time.get_ticks())
-
-    # Registrar eventos con IA
-    eventVar = registroContinuo(jugador, id_usuario, pelota, fecha, bot, arco_derecho, arco_izquierdo)
-    now = pygame.time.get_ticks()
-
-
-    if eventVar and (now - last_event_time) > 5000:  # Evita mensajes muy seguidos
-        last_event_time = now
-    
-        import threading
-
-        def registrar_mensaje_sync(id_usuario, eventVar):
-
-            mensaje = asyncio.run(generar_mensaje(SacarUsuario(id_usuario), str(eventVar[0][0])))
-
-            try:
-                conn = get_connection()  # tu función importada
-                cursor = conn.cursor()
-                sql = "INSERT INTO mensaje (mensaje) VALUES (%s)"
-                cursor.execute(sql, (mensaje,))
-                conn.commit()
-                print("✅ Mensaje registrado en DB:", mensaje)
-            except Exception as e:
-                print("❌ Error al registrar mensaje:", e)
-            finally:
-                cursor.close()
-                conn.close()
-
-        threading.Thread(
-            target=registrar_mensaje_sync,
-            args=(id_usuario, eventVar),
-            daemon=True
-        ).start()
-    
-    pygame.display.flip()
+        clock.tick(FPS)

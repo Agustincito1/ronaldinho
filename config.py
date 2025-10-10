@@ -1,7 +1,7 @@
 import pygame
 pygame.init()
 pygame.display.set_caption("Ronaldinho")
-WIDTH, HEIGHT = 1200, 800
+WIDTH, HEIGHT = 1200, 600
 NEGRO = (0, 0, 0)
 # Color de selección/énfasis — cambiado a naranja para mejor contraste con el fondo #041F37
 ROJO = (255, 165, 0)
@@ -43,7 +43,7 @@ color_link = (100, 150, 255)  # celeste
 link_render = fuente_chica.render(link_text, True, color_link)
 link_rect = link_render.get_rect(bottomright=(WIDTH - 20, HEIGHT - 20))
 
-
+GROUND_OFFSET = 40
 RUTA_FUENTE_PRINCIPAL = "./utils/assets/font/InstrumentSans-VariableFont_wdth,wght.ttf" 
 TAMAÑO_FUENTE_GRANDE = 75
 TAMAÑO_FUENTE_CHICA = 35
@@ -61,3 +61,9 @@ except FileNotFoundError:
     fuente = pygame.font.Font(None, TAMAÑO_FUENTE_GRANDE)
     fuente_chica = pygame.font.Font(None, TAMAÑO_FUENTE_CHICA)
     fuente_chica2 = pygame.font.Font(None, TAMAÑO_FUENTE_CHICA2)
+
+
+try:
+	arcoImg = pygame.image.load("./utils/imgs/arcos.png")
+except Exception:
+	logoMenuResponsive = None
