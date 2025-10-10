@@ -2,7 +2,7 @@ import pygame
 import sys
 import webbrowser
 from datetime import datetime
-from utils.functions.gameObject import Personaje, Arco, Pelota, Contador, arcoDibujo
+from utils.functions.gameObject import Personaje, Arco, Pelota, Contador
 from utils.functions.functionMenu import show_menu_seleccion, show_ranking
 from utils.functions.functionRegister import login_usuario, registro_usuario
 from config import (
@@ -112,6 +112,7 @@ while True:
             if event.key == pygame.K_DOWN:
                 opcion = (opcion + 1) % len(menu_opciones)
             if event.key == pygame.K_RETURN:
+
                 if opcion == 0:
                     usuario_actual = login_usuario()
                     if usuario_actual:
@@ -168,6 +169,7 @@ while True:
             cursor = pygame.SYSTEM_CURSOR_HAND
             pygame.mouse.set_cursor(cursor)
 
+        
         pygame.mouse.set_cursor(cursor)
         show_menu_seleccion(opcion, mouse_x, mouse_y)
 

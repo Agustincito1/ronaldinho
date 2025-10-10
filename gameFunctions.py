@@ -5,7 +5,6 @@ from config import WIDTH, HEIGHT, duracion_partido, fuente, fuente_chica, fondoR
 from utils.functions.functionRegister import registrar_resultado
 from utils.functions.registroColisiones import registroContinuo
 from conn import get_connection
-from utils.functions.gameObject import arcoDibujo
 import pygame
 import threading
 from utils.functions.othersFunction import SacarUsuario
@@ -129,8 +128,8 @@ def gameShow(id_usuario, goles_bot, goles_jugador, last_event_time, jugador, bot
     ventana.blit(jugador.player_img, jugador.player_rect)
     ventana.blit(bot.bot_img, bot.bot_rect)
     ventana.blit(pelota.pelota_img, pelota.pelota_rect)
-    arcoDibujo(ventana, arco_izquierdo.arco_izq_x, arco_izquierdo.arco_izq_y, direccion="izquierda")
-    arcoDibujo(ventana, arco_izquierdo.arco_der_x, arco_izquierdo.arco_der_y, direccion="derecha")
+    arco_izquierdo.draw(ventana)
+    arco_derecho.draw(ventana)
 
     ventana.blit(contador.text, (WIDTH // 2 - contador.text.get_width() // 2, 70))
     marcador = fuente_chica.render(f"{goles_jugador}  -  {goles_bot}", True, ROJO)

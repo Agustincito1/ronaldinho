@@ -2,36 +2,6 @@ import pygame
 import random
 from config import BLANCO, WIDTH, HEIGHT, duracion_partido, tiempo_inicio, partido_terminado, ventana, fuente_chica
 pygame.init()
-def arcoDibujo(surface, x, y, width=100, height=320, post_width=10, color=BLANCO, direccion="derecha"):
-    net_color = (200, 200, 200)
-    net_spacing = 20
-    shadow_color = (50, 50, 50, 80)
-
-    if direccion == "derecha":
-        # postes verticales
-        pygame.draw.rect(surface, color, (x, y, post_width, height))
-        # travesaño horizontal
-        pygame.draw.rect(surface, color, (x, y, width, post_width))
-
-        for i in range(1, width // net_spacing):
-            pygame.draw.line(surface, net_color, (x + i * net_spacing, y + post_width), (x + i * net_spacing, y + height), 1)
-        for j in range(1, height // net_spacing):
-            pygame.draw.line(surface, net_color, (x, y + j * net_spacing), (x + width, y + j * net_spacing), 1)
-    else:  
-        # postes verticales lado izquierdo
-        pygame.draw.rect(surface, color, (x + width - post_width, y, post_width, height))
-        # travesaño horizontal
-        pygame.draw.rect(surface, color, (x, y, width, post_width))
-
-        for i in range(1, width // net_spacing):
-            pygame.draw.line(surface, net_color, (x + width - i * net_spacing, y + post_width), (x + width - i * net_spacing, y + height), 1)
-        for j in range(1, height // net_spacing):
-            pygame.draw.line(surface, net_color, (x, y + j * net_spacing), (x + width, y + j * net_spacing), 1)
-
-    # sombra debajo del arco
-    shadow_rect = pygame.Surface((width, 20), pygame.SRCALPHA)
-    shadow_rect.fill(shadow_color)
-    surface.blit(shadow_rect, (x, y + height))
 
 
 
@@ -158,25 +128,45 @@ class Personaje:
 
         
 
+
 class Arco:
 
     def __init__(self, lado):
-        self.arco_izq_x = 0
-        self.arco_izq_y = HEIGHT - 320
-        self.arco_der_x = WIDTH - 100
-        self.arco_der_y = HEIGHT - 320
-        self.arco_ancho = 100
-        self.arco_alto = 320
+        self.image  = pygame.image.load('./utils/imgs/arcos.png').convert_alpha()
 
         if lado == "iz":
-            self.arco_izq_x = 0
-            self.arco_izq_y = HEIGHT - 320
-            self.rect = pygame.Rect(self.arco_izq_x, self.arco_izq_y, 20, self.arco_alto)
 
+            self.arco_ancho = self.image.get_width()
+            self.arco_alto = self.image.get_height()
+            self.x = 0
+            self.y = HEIGHT - self.arco_alto
         elif lado == "dr":
-            self.arco_der_x = WIDTH - 100
-            self.arco_der_y = HEIGHT - 320
-            self.rect = pygame.Rect(self.arco_der_x + self.arco_ancho - 20, self.arco_der_y, 20, self.arco_alto)
+            # ➡️ ¡Aquí se le da la vuelta a la imagen solo para este objeto!
+            image = pygame.transform.flip(self.image, True, False)
+            # Posición derecha
+            self.arco_ancho = self.image.get_width()
+            self.arco_alto = self.image.get_height()
+            self.x = WIDTH - self.arco_ancho
+            self.y = HEIGHT - self.arco_alto
+        
+        self.arco_izq_x = 0
+        self.arco_izq_y = HEIGHT - self.arco_alto
+        self.arco_der_x = WIDTH - self.arco_ancho
+        self.arco_der_y = HEIGHT - self.arco_alto
+
+        if lado == "iz":
+            self.x = self.arco_izq_x
+            self.y = self.arco_izq_y
+            self.rect = pygame.Rect(self.x, self.y, 20, self.arco_alto) 
+        elif lado == "dr":
+            self.x = self.arco_der_x
+            self.y = self.arco_der_y
+            self.rect = pygame.Rect(self.x + self.arco_ancho - 20, self.y, 20, self.arco_alto)
+            
+        self.draw_rect = self.image.get_rect(topleft=(self.x, self.y))
+    def draw(self, surface: pygame.Surface):
+        surface.blit(self.image, self.draw_rect)
+
 
 
 class Pelota:
