@@ -1,5 +1,4 @@
 import sys
-from iaMens import generar_mensaje
 from config import WIDTH, HEIGHT, duracion_partido, fuente, fuente_chica, fondoResponsive, BLANCO, ROJO, FPS, ventana, clock, arcoImg, fuente_chica2,AZUL_OSCURO
 from utils.functions.functionRegister import registrar_resultado
 from utils.functions.registroColisiones import registroContinuo

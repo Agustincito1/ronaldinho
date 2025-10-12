@@ -1,6 +1,7 @@
 import pygame
 import sys
 import webbrowser
+from iaMens import show_preguntas
 from datetime import datetime
 from utils.functions.gameObject import Personaje, Arco, Pelota, Contador
 from utils.functions.functionMenu import show_menu_seleccion, show_ranking, show_menu_juego
@@ -179,6 +180,10 @@ while True:
                     execute = False
                     continue
                 elif opcion == 2:
+                    name = SacarUsuario(usuario_actual)
+                    show_preguntas(name)
+                    execute = False
+                elif opcion == 3:
                     pygame.quit()
     # =======================
     # CONTROL DE CURSOR GLOBAL
