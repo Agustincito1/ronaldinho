@@ -1,149 +1,311 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Estadísticas del Usuario</title>
-  <!-- AdminLTE CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="hold-transition sidebar-mini">
-<div class="wrapper">
-  <div class="content-wrapper">
-    <section class="content-header">
-      <div class="container-fluid">
-        <h1>Estadísticas del Usuario</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estadísticas del Usuario (Dinámico)</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      .input-group > button {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+      .content-wrapper {
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+  <body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+      <div class="content-wrapper">
+        <section class="content-header">
+          <div class="container-fluid">
+            <h1 class="text-primary">
+              <i class="fas fa-chart-line"></i> Estadísticas de
+              <span id="nombreUsuario" class="text-secondary">Usuario</span>
+            </h1>
+          </div>
+        </section>
+
+        <section class="content">
+          <div class="container-fluid">
+            <div id="messageContainer" class="mb-3"></div>
+
+            <div class="row mb-4">
+              <div class="col-md-5 col-lg-4">
+                <div class="input-group input-group-lg shadow-sm rounded">
+                  <input
+                    type="number"
+                    id="userId"
+                    class="form-control"
+                    placeholder="Ingrese ID de usuario (e.g., 101 o 102)"
+                  />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-primary"
+                      onclick="cargarEstadisticas()"
+                    >
+                      <i class="fas fa-search"></i> Buscar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-3 col-6">
+                <div class="info-box bg-info shadow-sm">
+                  <span class="info-box-icon"
+                    ><i class="fas fa-gamepad"></i
+                  ></span>
+                  <div class="info-box-content">
+                    <span class="info-box-text">Partidas Jugadas</span>
+                    <span class="info-box-number" id="totalPartidas">0</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="info-box bg-success shadow-sm">
+                  <span class="info-box-icon"
+                    ><i class="fas fa-trophy"></i
+                  ></span>
+                  <div class="info-box-content">
+                    <span class="info-box-text">Victorias</span>
+                    <span class="info-box-number" id="victorias">0</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="info-box bg-danger shadow-sm">
+                  <span class="info-box-icon"
+                    ><i class="fas fa-times"></i
+                  ></span>
+                  <div class="info-box-content">
+                    <span class="info-box-text">Derrotas</span>
+                    <span class="info-box-number" id="derrotas">0</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="info-box bg-secondary shadow-sm">
+                  <span class="info-box-icon"
+                    ><i class="fas fa-equals"></i
+                  ></span>
+                  <div class="info-box-content">
+                    <span class="info-box-text">Empates</span>
+                    <span class="info-box-number" id="empates">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12">
+                <div class="card card-primary card-outline shadow-sm">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i class="fas fa-calendar-alt"></i> Resumen de Partidas
+                      por Mes
+                    </h3>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="graficoMensual"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </section>
+    </div>
 
-    <section class="content">
-      <div class="container-fluid">
-        <!-- Input para ID -->
-        <div class="row mb-3">
-          <div class="col-md-4">
-            <div class="input-group">
-              <input type="number" id="userId" class="form-control" placeholder="Ingrese ID de usuario">
-              <button class="btn btn-primary" onclick="cargarEstadisticas()">Buscar</button>
-            </div>
-          </div>
-        </div>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
-        <!-- Info Boxes -->
-        <div class="row">
-          <div class="col-lg-3 col-6">
-            <div class="info-box bg-info">
-              <span class="info-box-icon"><i class="fas fa-gamepad"></i></span>
-              <div class="info-box-content">
-                <span class="info-box-text">Partidas Jugadas</span>
-                <span class="info-box-number" id="totalPartidas">0</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="info-box bg-success">
-              <span class="info-box-icon"><i class="fas fa-trophy"></i></span>
-              <div class="info-box-content">
-                <span class="info-box-text">Victorias</span>
-                <span class="info-box-number" id="victorias">0</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="info-box bg-danger">
-              <span class="info-box-icon"><i class="fas fa-times"></i></span>
-              <div class="info-box-content">
-                <span class="info-box-text">Derrotas</span>
-                <span class="info-box-number" id="derrotas">0</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="info-box bg-secondary">
-              <span class="info-box-icon"><i class="fas fa-equals"></i></span>
-              <div class="info-box-content">
-                <span class="info-box-text">Empates</span>
-                <span class="info-box-number" id="empates">0</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <script>
+      let grafico; // variable global para el gráfico
 
-        <!-- Gráfico mensual -->
-        <div class="row">
-          <div class="col-12">
-            <div class="card card-primary">
-              <div class="card-header">
-                <h3 class="card-title">Resumen por Mes</h3>
-              </div>
-              <div class="card-body">
-                <canvas id="graficoMensual"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-</div>
+      /**
+       * Muestra un mensaje temporal en la interfaz (en lugar de usar alert).
+       * @param {string} message - El mensaje a mostrar.
+       * @param {('success'|'danger'|'info'|'warning')} type - El tipo de alerta.
+       */
+      function mostrarMensaje(message, type = "info") {
+        const container = document.getElementById("messageContainer");
+        // Limpiar mensajes anteriores
+        container.innerHTML = "";
 
-<!-- AdminLTE JS -->
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-<!-- FontAwesome -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+        // Crear el elemento de alerta de AdminLTE
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.setAttribute("role", "alert");
+        alertDiv.innerHTML = `
+ <span>${message}</span>
+ <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+ <span aria-hidden="true">&times;</span>
+ </button>
+ `;
+        container.appendChild(alertDiv);
 
-<script>
-let grafico; // variable global para el gráfico
-
-function cargarEstadisticas() {
-  const userId = document.getElementById('userId').value;
-  if (!userId) {
-    alert("Ingrese un ID de usuario");
-    return;
-  }
-
-  // Aquí iría la llamada a tu backend para obtener los datos reales
-  // Por ahora simulamos datos
-  
-  const datosUsuario = {
-    totalPartidas: 50,
-    victorias: 25,
-    derrotas: 20,
-    empates: 5,
-    resumenMeses: [2, 5, 3, 6, 4, 7, 8, 5, 3, 4, 2, 1] // partidas por mes
-  };
-
-  // Actualizar info boxes
-  document.getElementById('totalPartidas').innerText = datosUsuario.totalPartidas;
-  document.getElementById('victorias').innerText = datosUsuario.victorias;
-  document.getElementById('derrotas').innerText = datosUsuario.derrotas;
-  document.getElementById('empates').innerText = datosUsuario.empates;
-
-  // Actualizar gráfico
-  const ctx = document.getElementById('graficoMensual').getContext('2d');
-  if (grafico) grafico.destroy(); // destruir gráfico anterior
-  grafico = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-      datasets: [{
-        label: 'Partidas jugadas',
-        data: datosUsuario.resumenMeses,
-        backgroundColor: '#007bff'
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          precision:0
+        // Opcional: Desaparecer el mensaje después de 5 segundos si no es un error crítico
+        if (type !== "danger") {
+          setTimeout(() => {
+            if (alertDiv.parentElement === container) {
+              container.removeChild(alertDiv);
+            }
+          }, 5000);
         }
       }
-    }
-  });
-}
-</script>
 
-</body>
+      /**
+       * Actualiza los cuadros de información y el gráfico con los datos recibidos.
+       * @param {object} datosUsuario - Objeto JSON con las estadísticas.
+       */
+      function actualizarUI(datosUsuario) {
+        // 0. Actualizar el nombre del usuario en el título
+        document.getElementById("nombreUsuario").innerText =
+          datosUsuario.Nombre_Usuario;
+
+        // 1. Actualizar info boxes
+        document.getElementById("totalPartidas").innerText =
+          datosUsuario.totalPartidas.toLocaleString("es-ES");
+        document.getElementById("victorias").innerText =
+          datosUsuario.victorias.toLocaleString("es-ES");
+        document.getElementById("derrotas").innerText =
+          datosUsuario.derrotas.toLocaleString("es-ES");
+        document.getElementById("empates").innerText =
+          datosUsuario.empates.toLocaleString("es-ES");
+
+        // 2. Actualizar gráfico
+        const ctx = document.getElementById("graficoMensual").getContext("2d");
+        // Destruir el gráfico anterior si existe
+        if (grafico) grafico.destroy();
+
+        // Configuración del gráfico (Partidas Jugadas por Mes)
+        grafico = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: [
+              "Ene",
+              "Feb",
+              "Mar",
+              "Abr",
+              "May",
+              "Jun",
+              "Jul",
+              "Ago",
+              "Sep",
+              "Oct",
+              "Nov",
+              "Dic",
+            ],
+            datasets: [
+              {
+                label: "Partidas jugadas",
+                data: datosUsuario.resumenMeses,
+                backgroundColor: "#007bff", // Color de AdminLTE: info/primary
+                borderColor: "#0056b3",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false, // Permitir que el gráfico ocupe el tamaño de su contenedor
+            plugins: {
+              legend: {
+                display: false,
+              },
+              title: {
+                display: true,
+                text: "Distribución Mensual de Partidas",
+                font: {
+                  size: 16,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                // Asegurar que las etiquetas del eje Y sean números enteros
+                ticks: {
+                  stepSize: 1,
+                  callback: function (value) {
+                    if (Number.isInteger(value)) return value;
+                  },
+                },
+              },
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      /**
+       * Función principal para cargar estadísticas del usuario mediante una llamada API.
+       */
+      async function cargarEstadisticas() {
+        const userId = document.getElementById("userId").value;
+        if (!userId) {
+          mostrarMensaje("Por favor, ingrese un ID de usuario.", "warning");
+          return;
+        }
+
+        // URL del backend Python/Flask
+        const apiUrl = `http://127.0.0.1:5000/api/stats/${userId}`;
+        mostrarMensaje(`Buscando estadísticas para ID ${userId}...`, "info");
+
+        try {
+          const response = await fetch(apiUrl);
+
+          // Manejar errores HTTP (404, 500, etc.)
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              `Error en el servidor: ${errorData.error || response.statusText}`
+            );
+          }
+
+          const datosUsuario = await response.json();
+
+          // Asegurarse de que los datos tienen la estructura esperada
+          if (datosUsuario.totalPartidas === undefined) {
+            throw new Error("Respuesta del servidor no válida.");
+          }
+
+          actualizarUI(datosUsuario);
+          mostrarMensaje(
+            `Estadísticas cargadas exitosamente para ${datosUsuario.Nombre_Usuario} (ID: ${userId})`,
+            "success"
+          );
+        } catch (error) {
+          console.error("Error al cargar estadísticas:", error);
+          mostrarMensaje(
+            `Error de conexión/datos: ${error.message}. Asegúrese de que el servidor Python esté corriendo en http://127.0.0.1:5000.`,
+            "danger"
+          );
+          // Limpiar la interfaz en caso de error
+          actualizarUI({
+            Nombre_Usuario: "Usuario", // Restablecer el nombre al valor predeterminado
+            totalPartidas: 0,
+            victorias: 0,
+            derrotas: 0,
+            empates: 0,
+            resumenMeses: [],
+          });
+        }
+      }
+    </script>
+  </body>
 </html>
