@@ -3,6 +3,7 @@ import sys
 import webbrowser
 from iaMens import show_preguntas
 from datetime import datetime
+from shop import mostrar_mercado_skins
 from utils.functions.gameObject import Personaje, Arco, Pelota, Contador
 from utils.functions.functionMenu import show_menu_seleccion, show_ranking, show_menu_juego
 from utils.functions.functionRegister import login_usuario, registro_usuario
@@ -184,6 +185,10 @@ while True:
                     show_preguntas(name)
                     execute = False
                 elif opcion == 3:
+                    name = SacarUsuario(usuario_actual)
+                    mostrar_mercado_skins(name)
+                    execute = False
+                elif opcion == 4:
                     pygame.quit()
     # =======================
     # CONTROL DE CURSOR GLOBAL
