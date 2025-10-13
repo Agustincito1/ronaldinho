@@ -42,6 +42,12 @@ class Boton:
         if evento.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(evento.pos) and self.accion:
             return self.accion()
         return None
+    
+    def clicVolver(self, evento):
+        if evento.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(evento.pos) and evento.button == 1:
+            return True
+        return None
+    
 
 def mostrar_mercado_skins(nombre_usuario):
     
@@ -214,10 +220,11 @@ def mostrar_mercado_skins(nombre_usuario):
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
-                sys.exit()
-            
-            if boton_volver.clic(evento):
-                ejecutando = False
+                sys.exit() 
+
+
+            if boton_volver.clicVolver(evento):
+                return
             
             for clave_skin, boton in botones_skins:
                 resultado_accion = boton.clic(evento)
