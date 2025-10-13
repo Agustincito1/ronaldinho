@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify
 import mysql.connector
 from informe.informeParaWeb import estadisticas_usuario
 from collections import defaultdict
-
+import json
 def SacarUsuario(id):
     # Leer usuarios
     usuario = ""
@@ -84,8 +84,13 @@ def mensajes():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     
-    cursor.execute("SELECT Id, mensaje FROM mensaje LIMIT 10;")
+    cursor.execute("SELECT pregunta, opciones, respuesta, usuario FROM mensaje")
     mensajes = cursor.fetchall()
+    for m in mensajes:
+        try:
+            m["opciones"] = json.loads(m["opciones"])
+        except:
+            m["opciones"] = []  
     
     cursor.close()
     conn.close()

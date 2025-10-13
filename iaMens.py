@@ -99,12 +99,7 @@ def incrementar_conteo_diario(usuario):
 # --- GESTIÓN DE PUNTUACIONES (Modificado para ser Acumulable) ---
 
 def cargar_puntuaciones():
-    """
-    Carga las puntuaciones totales acumuladas (monedas) de todos los usuarios
-    desde el archivo y retorna un diccionario con el formato:
-    {usuario: {"id": int, "puntaje": int}}
-    También retorna el último ID registrado.
-    """
+
     puntuaciones = {}
     ultimo_id = 0
     if not os.path.exists(ARCHIVO_PUNTUACIONES):
@@ -192,9 +187,38 @@ def generar_mensaje(usuario):
             "opciones": ["Reintentar", "Salir", "Reintentar"]
         }
 
+from conn import get_connection
 
-def verificar_respuesta(pregunta, opciones, respuesta_usuario):
-    prompt = f"Pregunta: {pregunta}\nOpciones: {opciones}\nRespuesta del usuario: {respuesta_usuario}\nEvalúa si la respuesta del usuario es correcta o incorrecta.\nSi es correcta, **SOLO RESPONDE EL NÚMERO 1**.\nSi es incorrecta, **SOLO RESPONDE EL NÚMERO 0**.\nNO AÑADAS NINGÚN OTRO TEXTO, EXPLICACIÓN O CARACTER ADICIONAL."
+def verificar_respuesta(pregunta, opciones, respuesta_usuario, usuario):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Convertir lista de opciones a JSON
+    opciones_json = json.dumps(opciones)
+
+    query = """
+        INSERT INTO mensaje (pregunta, opciones, respuesta, usuario)
+        VALUES (%s, %s, %s, %s)
+    """
+    valores = (pregunta, opciones_json, respuesta_usuario, usuario)
+
+    cursor.execute(query, valores)
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    # === Verificación con IA ===
+    prompt = (
+        f"Pregunta: {pregunta}\n"
+        f"Opciones: {opciones}\n"
+        f"Respuesta del usuario: {respuesta_usuario}\n"
+        "Evalúa si la respuesta del usuario es correcta o incorrecta.\n"
+        "Si es correcta, SOLO RESPONDE EL NÚMERO 1.\n"
+        "Si es incorrecta, SOLO RESPONDE EL NÚMERO 0.\n"
+        "NO AÑADAS NINGÚN OTRO TEXTO, EXPLICACIÓN O CARACTER ADICIONAL."
+    )
+
     try:
         chat = openai.ChatCompletion.create(
             model="BotLX18X5TJQ9",
@@ -202,22 +226,21 @@ def verificar_respuesta(pregunta, opciones, respuesta_usuario):
             max_tokens=500,
             temperature=0.0
         )
+
         mensaje = chat.choices[0].message["content"].strip()
-        print(f"Respuesta de verificación de IA bruta: {mensaje}") 
-        
+        print(f"Respuesta de verificación de IA bruta: {mensaje}")
+
         match = re.search(r"[01]", mensaje)
-        
+
         if match:
-            return int(match.group(0)) 
+            return int(match.group(0))
         else:
             print("❌ No se pudo extraer 0 o 1 de la respuesta de la IA.")
             return -1
 
     except Exception as e:
         print("❌ Error al comunicarse con la IA para la verificación:", e)
-        return -1 
-
-
+        return -1
 # --- CLASE BOTÓN (Existente) ---
 
 class Boton:
@@ -395,7 +418,8 @@ def show_preguntas(usuario):
                         resultado = verificar_respuesta(
                             pregunta_actual["pregunta"], 
                             pregunta_actual["opciones"], 
-                            respuesta_elegida
+                            respuesta_elegida,
+                            usuario
                         )
 
                         if resultado == 1:

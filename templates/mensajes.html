@@ -12,11 +12,23 @@
   </header>
   <main>
       {% if mensajes %}
-        <ul class="mensaje-lista">
-          {% for m in mensajes %}
-            <li>{{ m.mensaje }}</li>
-          {% endfor %}
-        </ul>
+        {% for m in mensajes %}
+          <li class="mensaje-item">
+            <h2 class="pregunta">{{ m.pregunta }}</h2>
+
+            <ul class="opciones">
+              {% for opcion in m.opciones %}
+                <li>{{ opcion }}</li>
+              {% endfor %}
+            </ul>
+
+            <div class="info-extra">
+              <p class="respuesta"><strong>Respuesta:</strong> {{ m.respuesta }}</p>
+              <p class="usuario"><strong>Usuario:</strong> {{ m.usuario }}</p>
+            </div>
+          </li>
+        {% endfor %}
+
       {% else %}
         <p class="no-mensaje">No hay mensajes en la base de datos.</p>
       {% endif %}
