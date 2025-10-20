@@ -1,1 +1,1 @@
-lazaro,skin_roja
+1, 1, skin_roja

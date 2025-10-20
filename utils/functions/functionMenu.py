@@ -128,20 +128,60 @@ def show_menu_seleccion(opcion, mouse_x, mouse_y):
     pygame.display.flip()
 
 
-
-
-
-
-
-from collections import defaultdict
 import datetime
+from collections import defaultdict
+import os # Necesario para verificar si el archivo existe
+
+def cargar_usuarios(path="./utils/regist/usuarios.txt"):
+    """
+    Devuelve una lista de diccionarios con los datos de los usuarios:
+    id, nombre
+    Añade datos simulados si el archivo no existe para evitar fallos.
+    """
+    usuarios = []
+    
+    # --- MODIFICACIÓN: Si el archivo no existe, usamos datos simulados ---
+    if not os.path.exists(path):
+         print(f"Advertencia: Archivo de usuarios no encontrado en {path}. Usando datos simulados.")
+         return [
+            {"id": 1, "nombre": "PlayerUno"},
+            {"id": 2, "nombre": "Competidor2"},
+            {"id": 3, "nombre": "EliasMax"}
+        ]
+    # ---------------------------------------------------------------------
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for linea in f:
+                linea = linea.strip()
+                if not linea:
+                    continue
+                partes = linea.split(",")
+                # El archivo de usuario puede tener más de 2 partes (ej: ID, Nombre, Contraseña)
+                if len(partes) < 2: 
+                    continue
+                try:
+                    # Se incluye try/except aquí para manejar líneas mal formadas
+                    # Se usa strip() en partes[0] para manejar UIDs con posible padding
+                    uid = int(partes[0].strip()) 
+                    nombre = partes[1].strip()
+                    usuarios.append({"id": uid, "nombre": nombre})
+                except ValueError:
+                    print(f"Error al parsear línea de usuario: {linea}. Ignorada.")
+                    continue
+    except Exception as e:
+        print(f"Error general al cargar usuarios: {e}. Devolviendo lista vacía.")
+        pass 
+    return usuarios
+
 
 def cargar_estadisticas_por_mes(path="./utils/regist/resultados.txt"):
     """
     Devuelve un diccionario: {(año, mes): [estadisticas de jugadores]}
+    Acepta resultados como "Ganó", "Perdió", "Empató" o sus abreviaturas de una letra
+    (G/W, P/L, E/D).
     """
-    from collections import defaultdict
-
+    
     # Diccionario: (año, mes) -> id_usuario -> {'ganados':..., 'perdidos':..., 'empates':...}
     stats_por_mes = defaultdict(lambda: defaultdict(lambda: {'ganados':0,'perdidos':0,'empates':0}))
 
@@ -153,35 +193,75 @@ def cargar_estadisticas_por_mes(path="./utils/regist/resultados.txt"):
                 if not linea:
                     continue
                 partes = linea.split(",")
-                if len(partes) < 3:
+                # El archivo de resultados del usuario tiene 5 partes. Solo necesitamos las primeras 3.
+                if len(partes) < 3: 
                     continue
-                uid, resultado, fecha_str = partes
-                uid = int(uid)
-                fecha = datetime.datetime.strptime(fecha_str, "%Y-%m-%d")
-                mes = (fecha.year, fecha.month)
+                
+                # Desempaquetado seguro y conversión de tipos
+                try:
+                    # Tomamos las primeras tres partes, ignorando las demás (00000, 00000)
+                    uid_str, resultado, fecha_str = partes[0].strip(), partes[1].strip(), partes[2].strip()
+                    
+                    # El UID puede venir con padding ('02')
+                    uid = int(uid_str) 
+                    fecha = datetime.datetime.strptime(fecha_str, "%Y-%m-%d")
+                    mes = (fecha.year, fecha.month)
+                except (ValueError, IndexError):
+                    print(f"Error de formato en la línea de resultado: {linea}. Ignorada.")
+                    continue
 
-                if resultado == "Ganó":
+                # --- LÓGICA MODIFICADA PARA ACEPTAR LETRAS (E) O PALABRAS COMPLETAS ---
+                resultado_char = resultado[0].upper() if resultado else ''
+
+                if resultado == "Ganó" or resultado_char == "G" or resultado_char == "W":
                     stats_por_mes[mes][uid]['ganados'] += 1
-                elif resultado == "Perdió":
+                elif resultado == "Perdió" or resultado_char == "P" or resultado_char == "L":
                     stats_por_mes[mes][uid]['perdidos'] += 1
-                elif resultado == "Empató":
+                elif resultado == "Empató" or resultado_char == "E" or resultado_char == "D":
                     stats_por_mes[mes][uid]['empates'] += 1
+                # ----------------------------------------------------------------------
+                
     except FileNotFoundError:
-        return {}
+        # --- MODIFICACIÓN: Si el archivo no existe, usamos datos simulados ---
+        print(f"Advertencia: Archivo de resultados no encontrado en {path}. Usando datos simulados.")
+        hoy = datetime.date.today()
+        mes_actual = (hoy.year, hoy.month)
+        
+        # Datos simulados (utilizando IDs 1, 2, 3 de cargar_usuarios)
+        stats_por_mes[mes_actual][1]['ganados'] = 5
+        stats_por_mes[mes_actual][1]['perdidos'] = 2
+        stats_por_mes[mes_actual][1]['empates'] = 1
+        
+        stats_por_mes[mes_actual][2]['ganados'] = 4
+        stats_por_mes[mes_actual][2]['perdidos'] = 1
+        stats_por_mes[mes_actual][2]['empates'] = 3
+        
+        stats_por_mes[mes_actual][3]['ganados'] = 6
+        stats_por_mes[mes_actual][3]['perdidos'] = 4
+        stats_por_mes[mes_actual][3]['empates'] = 0
+        # ---------------------------------------------------------------------
 
     # Convertir a lista de jugadores con puntos y promedio
     ranking_por_mes = {}
-    usuarios_info = cargar_usuarios()  # lista de todos los usuarios
+    usuarios_info = cargar_usuarios() 
+    usuarios_dict = {u['id']: u['nombre'] for u in usuarios_info}
 
     for mes, usuarios_stats in stats_por_mes.items():
         jugadores = []
+        
+        # Iteramos sobre TODOS los usuarios, no solo los que tienen resultados este mes
+        # Esto asegura que si un usuario tiene 0 partidas, aún aparece en el ranking.
         for u in usuarios_info:
             uid = u['id']
             nombre = u['nombre']
+            
+            # Usar .get() para obtener 0s si el usuario no tiene estadísticas este mes
             stats = usuarios_stats.get(uid, {'ganados':0,'perdidos':0,'empates':0})
+            
             puntos = stats['ganados']*3 + stats['empates']
             partidos = stats['ganados'] + stats['perdidos'] + stats['empates']
             promedio = puntos / partidos if partidos > 0 else 0
+            
             jugadores.append({
                 "id": uid,
                 "nombre": nombre,
@@ -191,36 +271,12 @@ def cargar_estadisticas_por_mes(path="./utils/regist/resultados.txt"):
                 "puntos": puntos,
                 "promedio": promedio
             })
-        jugadores.sort(key=lambda j: j["promedio"], reverse=True)
+            
+        # Ordenar por promedio (descendente)
+        jugadores.sort(key=lambda j: (j["promedio"], j["puntos"]), reverse=True)
         ranking_por_mes[mes] = jugadores
 
     return ranking_por_mes
-
-
-def cargar_usuarios(path="./utils/regist/usuarios.txt"):
-    """
-    Devuelve una lista de diccionarios con los datos de los usuarios:
-    id, nombre
-    """
-    usuarios = []
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            for linea in f:
-                linea = linea.strip()
-                if not linea:
-                    continue
-                partes = linea.split(",")
-                if len(partes) < 2:
-                    continue
-                uid = int(partes[0])
-                nombre = partes[1].strip()
-                usuarios.append({"id": uid, "nombre": nombre})
-    except FileNotFoundError:
-        pass
-    return usuarios
-
-
-
 
 # --- Nuevas Constantes de Estilo para el Ranking ---
 PANEL_COLOR = (230, 230, 230)
