@@ -1,7 +1,12 @@
 import pygame
 pygame.init()
 pygame.display.set_caption("Ronaldinho")
-WIDTH, HEIGHT = 1200, 600
+info = pygame.display.Info()
+WIDTH, HEIGHT = info.current_w, info.current_h
+PANTALLA = pygame.display.set_mode(
+    (WIDTH, HEIGHT), 
+    pygame.FULLSCREEN
+)
 NEGRO = (0, 0, 0)
 # Color de selección/énfasis — cambiado a naranja para mejor contraste con el fondo #041F37
 ROJO = (255, 165, 0)
