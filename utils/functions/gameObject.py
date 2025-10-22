@@ -2,7 +2,7 @@ import pygame
 import random
 from config import BLANCO, WIDTH, HEIGHT, duracion_partido, tiempo_inicio, partido_terminado, ventana, fuente_chica, GROUND_OFFSET 
 pygame.init()
-
+PROFUNDIDAD_GOL = 50
 class Arco:
     def __init__(self, lado):
         self.image = pygame.image.load('./utils/imgs/ar.png').convert_alpha()
@@ -24,12 +24,23 @@ class Arco:
             self.x = 0
             self.y = HEIGHT - self.arco_alto - GROUND_OFFSET
             self.rect = pygame.Rect(self.x, self.y, 20, self.arco_alto)
-            self.goal_area_rect = pygame.Rect(self.x, self.y + self.arco_alto // 3, 20, self.arco_alto // 3)
+            self.goal_area_rect = pygame.Rect(
+                self.x + 20,  # Empieza justo después del poste que colisiona con la pelota.
+                self.y,       # Empieza en la parte superior del arco.
+                PROFUNDIDAD_GOL, # Un ancho suficiente para detectar la entrada.
+                self.arco_alto  # Toda la altura del arco.
+            )
+
         elif lado == "dr":
             self.x = WIDTH - self.arco_ancho
             self.y = HEIGHT - self.arco_alto - GROUND_OFFSET
             self.rect = pygame.Rect(self.x + self.arco_ancho - 20, self.y, 20, self.arco_alto)
-            self.goal_area_rect = pygame.Rect(self.x + self.arco_ancho - 20, self.y + self.arco_alto // 3, 20, self.arco_alto // 3)
+            self.goal_area_rect = pygame.Rect(
+                self.x + self.arco_ancho - 20 - PROFUNDIDAD_GOL, # Posición X: A la izquierda del poste.
+                self.y,                                         # Empieza en la parte superior.
+                PROFUNDIDAD_GOL,                                # Un ancho suficiente para detectar la entrada.
+                self.arco_alto                                  # Toda la altura del arco.
+            )
 
         # Rect para dibujar la imagen
         self.draw_rect = self.image.get_rect(topleft=(self.x, self.y))
