@@ -188,17 +188,16 @@ def login_usuario():
     
     calcular_geometria(current_width, current_height)
 
-    # 1. Mapeo Nombre -> ID (Se lee una vez, ¡no hay recorrido en el login final!)
     nombre_a_id = {}
     try:
-        # Abrimos en modo texto para facilidad de lectura
+        
+        ##matriz
         with open(RUTA_USUARIOS, "r", encoding="utf-8") as f:
             for line in f:
                 if line.strip():
-                    # Separamos el registro de longitud fija por comas
+                
                     partes = line.split(',')
                     if len(partes) >= 3:
-                        # Limpiamos los espacios de relleno de nombre y obtenemos ID
                         user_id = partes[0].strip()
                         user_nombre = partes[1].strip()
                         nombre_a_id[user_nombre] = int(user_id)
@@ -258,9 +257,8 @@ def login_usuario():
                     if nombre_limpio in nombre_a_id:
                         target_id = nombre_a_id[nombre_limpio]
                         
-                        # 3. USAR SEEK() PARA BUSCAR POR POSICIÓN
                         try:
-                            # Abrimos en modo de lectura binaria ('rb') para asegurar que seek() funcione con bytes
+                        
                             with open(RUTA_USUARIOS, "rb") as f:
                                 
                                 # Posición en bytes: (ID objetivo - 1) * Tamaño fijo del registro
@@ -681,119 +679,116 @@ def validar_registro(nombre, password, usuarios, ultimo_id, current_error, curre
             password, usuarios_actualizados, ultimo_id_actualizado, return_status)
 
 
-from datetime import datetime
+
+
+
+
+
+import logging
 import os
-import time 
+from datetime import datetime
 
-LFR = 28            
-LFR_POINTER = 5     
-RUTA_RESULTADOS = "./utils/regist/resultados.txt" 
+try:
+    from config import (
+        REGISTRO_SIZE, LONGITUD_PUNTERO_PRINCIPAL, RUTA_USUARIOS
+    )
+except ImportError:
+    REGISTRO_SIZE = 41
+    LONGITUD_PUNTERO_PRINCIPAL = 5
+    RUTA_USUARIOS = "./utils/regist/usuarios.txt"
+    OFFSET_A_PUNTERO_PRINCIPAL = 41
 
-def registrar_resultado(user_id, resultado, archivo=RUTA_RESULTADOS):
-    """
-    Registra un resultado de juego con punteros (Previo y Siguiente) en un archivo 
-    de longitud fija (28 bytes) para mantener una lista enlazada (linked list).
-    
-    El formato de registro es:
-    ID(2),RESULTADO(1),FECHA(10),PTR_PREV(5),PTR_NEXT(5)\\n
-    
-    Donde los punteros son índices de registro (1-based), y '00000' indica NULL.
-    """
-    
+REGISTRO_EVENTO_SIZE = 36
+LONGITUD_PUNTERO_EVENTO = 5
+LONGITUD_EVENTO = 12
+LONGITUD_ID_USUARIO = 4
+RUTA_REGISTRO_EVENTOS = "./utils/regist/resultados.txt"
+OFFSET_A_REGSIG = 24
+
+
+def obtener_ultimo_registro_y_tamano():
+    try:
+        os.makedirs(os.path.dirname(RUTA_REGISTRO_EVENTOS), exist_ok=True)
+        if not os.path.exists(RUTA_REGISTRO_EVENTOS):
+            return 0, 0
+        with open(RUTA_REGISTRO_EVENTOS, "rb") as f:
+            f.seek(0, 2)
+            tamano_archivo = f.tell()
+            ultimo_registro_numero = tamano_archivo // REGISTRO_EVENTO_SIZE 
+            return tamano_archivo, ultimo_registro_numero
+    except Exception as e:
+        print(f"Error al obtener tamaño del registro: {e}")
+        return 0, 0
+
+def actualizar_puntero_siguiente(registro_a_actualizar, puntero_siguiente):
+    offset_registro = (registro_a_actualizar - 1) * REGISTRO_EVENTO_SIZE
+    offset_a_escribir = offset_registro + OFFSET_A_REGSIG
+    nuevo_puntero_formateado = str(puntero_siguiente).zfill(LONGITUD_PUNTERO_EVENTO)
+    try:
+        with open(RUTA_REGISTRO_EVENTOS, "r+b") as f:
+            f.seek(offset_a_escribir)
+            f.write(nuevo_puntero_formateado.encode('utf-8'))
+    except Exception as e:
+        print(f"Error al actualizar puntero 'Siguiente' del registro {registro_a_actualizar}: {e}")
+
+def registrar_resultado(id_usuario, resultado):
+    if id_usuario is None:
+        return []
+
     fecha = datetime.now().strftime("%Y-%m-%d")
-    user_id_norm = str(user_id).zfill(2)
-    resultado_norm = str(resultado)[0].upper() if resultado else 'N' 
+    resultado_norm = (resultado[0].upper() if resultado else "N")    
+
+
+    tamano_total, num_registros_actuales = obtener_ultimo_registro_y_tamano()
+    nuevo_registro_numero = num_registros_actuales + 1
+    ultimo_registro_anterior = num_registros_actuales
+    ultimo_registro_mismo_usuario = 0
+    
+
+    if num_registros_actuales > 0:
+        with open(RUTA_REGISTRO_EVENTOS, "rb") as f:
+            for i in range(num_registros_actuales, 0, -1):
+                offset = (i - 1) * REGISTRO_EVENTO_SIZE
+                f.seek(offset + 6) 
+                id_reg = f.read(4).decode('utf-8')
+                if id_reg == str(id_usuario).zfill(LONGITUD_ID_USUARIO):
+                    ultimo_registro_mismo_usuario = i
+                    break
+
+    if ultimo_registro_mismo_usuario > 0:
+        reg_ant_puntero = str(ultimo_registro_mismo_usuario).zfill(LONGITUD_PUNTERO_EVENTO)    
+    else:
+        reg_ant_puntero = "0".zfill(LONGITUD_PUNTERO_EVENTO)
+        
+    
+    reg_sig_puntero = "0".zfill(LONGITUD_PUNTERO_EVENTO)
+    num_registro_formateado = str(nuevo_registro_numero).zfill(LONGITUD_PUNTERO_EVENTO)
+    id_formateado = str(id_usuario).zfill(LONGITUD_ID_USUARIO)
+
+    nuevo_registro_str = (
+        f"{num_registro_formateado},"
+        f"{id_formateado},"
+        f"{fecha},"
+        f"{resultado_norm},"
+        f"{reg_sig_puntero},"
+        f"{reg_ant_puntero}"
+        f"\n"
+    )
+    
+    nuevo_registro_bytes = nuevo_registro_str.encode('utf-8')
+        
+    if len(nuevo_registro_bytes) != REGISTRO_EVENTO_SIZE:
+        print(f"ERROR CRÍTICO DE TAMAÑO: {len(nuevo_registro_bytes)} != {REGISTRO_EVENTO_SIZE}")
+        return
+
 
     try:
-       
-        os.makedirs(os.path.dirname(archivo), exist_ok=True)
-        if not os.path.exists(archivo):
-             with open(archivo, "w+b") as f:
-                f.write(b'') 
-        
-        with open(archivo, "r+b") as f:
-            
-            f.seek(0, os.SEEK_END)
-            tamanio_archivo = f.tell()
-            num_registros_existentes = tamanio_archivo // LFR
-            
-            # El puntero del nuevo registro (índice, 1-based)
-            ptr_nuevo_registro = num_registros_existentes + 1
-            
-            # 2. Determinar el puntero PREVIO para el nuevo registro
-            if num_registros_existentes > 0:
-                # El puntero previo es el índice del último registro existente
-                ptr_previo_nuevo = str(num_registros_existentes).zfill(LFR_POINTER)
-                
-                pos_previo_ptr_next = (2 + 1 + 10 + 3 + LFR_POINTER) 
-                
-                # Calcular el offset total para llegar al campo PTR_NEXT del registro anterior
-                offset_ptr_next = ((num_registros_existentes - 1) * LFR) + pos_previo_ptr_next
-                
-                f.seek(offset_ptr_next)
-                
-                # El nuevo valor del puntero SIGUIENTE del registro anterior es el índice del nuevo registro
-                nuevo_ptr_siguiente_binario = str(ptr_nuevo_registro).zfill(LFR_POINTER).encode('utf-8')
-                f.write(nuevo_ptr_siguiente_binario)
-            else:
-                # Es el primer registro, el previo es nulo
-                ptr_previo_nuevo = '00000'
+        with open(RUTA_REGISTRO_EVENTOS, "ab") as f:
+            f.write(nuevo_registro_bytes)
+        if ultimo_registro_mismo_usuario > 0:
+            actualizar_puntero_siguiente(ultimo_registro_mismo_usuario, nuevo_registro_numero)
 
-            # 4. Escribir el NUEVO registro al final del archivo
-            f.seek(0, os.SEEK_END)
-            
-            # El puntero siguiente es '00000' porque es el último de la lista
-            ptr_siguiente_nuevo = '00000'
-            
-            registro = f"{user_id_norm},{resultado_norm},{fecha},{ptr_previo_nuevo},{ptr_siguiente_nuevo}\n"
-            
-            # Verificación de longitud
-            if len(registro.encode('utf-8')) != LFR:
-                 print(f"❌ Error interno: El registro generado tiene {len(registro.encode('utf-8'))} bytes, se esperaban {LFR} bytes.")
-                 return
-
-            f.write(registro.encode('utf-8'))
-            print(f"✅ Resultado registrado (Rec #{ptr_nuevo_registro}). Previo: {ptr_previo_nuevo}")
-            
     except Exception as e:
-        print("❌ Error al registrar resultado con punteros:", e)
-        
-    return ptr_nuevo_registro # Retornamos el índice del nuevo registro
+        print(f"Error al registrar evento: {e}")
 
-
-
-# --- Bucle de Ejecución Principal (Opcional, para testear) ---
-if __name__ == '__main__':
-    # Simulación de un menú que llama al login y registro
-    while True:
-        print("\n--- SIMULACIÓN DE MENU ---")
-        print("1. Login")
-        print("2. Registro")
-        print("3. Salir")
-        
-        opcion = input("Elige una opción: ")
-        
-        if opcion == '1':
-            user_id = login_usuario()
-            if user_id:
-                print(f"🎉 Usuario logueado con ID: {user_id}")
-            else:
-                print("❌ Login cancelado o fallido.")
-        
-        elif opcion == '2':
-            registro_exitoso = registro_usuario()
-            if registro_exitoso:
-                print("✅ Registro completado y regresando.")
-            else:
-                print("❌ Registro cancelado.")
-                
-        elif opcion == '3':
-            pygame.quit()
-            sys.exit()
-            
-        else:
-            print("Opción no válida.")
-        
-        # Mantenemos Pygame activo para redibujar en caso de error o menú
-        pygame.event.pump() 
-        clock.tick(FPS)
+    return 
