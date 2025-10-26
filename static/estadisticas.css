@@ -1,47 +1,49 @@
-/* Ajustes generales */
 body {
-  font-family: 'Arial', sans-serif;
-}
-
-/* Navbar */
-.btn-volver {
-  color: #fff !important;
-  background: #007bff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: 0.3s;
-}
-.btn-volver:hover {
-  background: #0056b3;
-}
-
-/* Header */
-.content-header h1 {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #333;
-}
-
-/* Tarjetas (sobrescribir AdminLTE un poco) */
-.small-box {
-  border-radius: 12px;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
-}
-
-.small-box .inner h3 {
-  font-size: 2rem;
-  font-weight: bold;
-}
-
-/* Responsividad */
-@media (max-width: 768px) {
-  .content-header h1 {
-    text-align: center;
-    font-size: 1.4rem;
-  }
-}
-
-#userId {
-  max-width: 200px;
-}
-
+        background-color: #f4f6f9; /* Color de fondo AdminLTE claro */
+      }
+      .input-group > button {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+      .content-wrapper {
+        padding-top: 20px;
+        min-height: calc(100vh - 40px); /* Asegura que el contenido ocupe la pantalla */
+      }
+      .info-box {
+        border-radius: 0.5rem; /* Bordes ligeramente redondeados */
+        transition: transform 0.3s ease-in-out;
+      }
+      .info-box:hover {
+        transform: translateY(-5px); /* Efecto sutil al pasar el ratón */
+      }
+      /* Ajuste responsive para la cabecera: Título y Botones */
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap; /* Permite que los elementos se apilen en pantallas pequeñas */
+        margin-bottom: 20px; /* Espacio extra para separar de la alerta y el buscador */
+      }
+      /* Ajuste responsive para los botones de navegación */
+      .navigation-buttons {
+        margin-top: 5px; /* Ajuste sutil */
+      }
+      .navigation-buttons a {
+        margin-right: 10px; /* Espacio entre botones */
+      }
+      /* Media query para reorganizar elementos en pantallas muy pequeñas */
+      @media (max-width: 576px) {
+        .header-content {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .navigation-buttons {
+          margin-top: 15px;
+          width: 100%; /* Botones de ancho completo */
+        }
+        .navigation-buttons a {
+          display: block;
+          margin-bottom: 5px;
+          margin-right: 0 !important; /* Elimina margen horizontal en móviles */
+        }
+      }

@@ -32,7 +32,19 @@
               <i class="fas fa-chart-line"></i> Estadísticas de
               <span id="nombreUsuario" class="text-secondary">Usuario</span>
             </h1>
-          </div>
+
+            <div class="mt-3 mb-4">
+              <a href="{{ url_for('index') }}" class="btn btn-default btn-sm shadow-sm">
+                <i class="fas fa-home"></i> Módulo Principal
+              </a>
+              <a
+                href="{{ url_for('mensajes') }}"
+                class="btn btn-outline-secondary btn-sm shadow-sm"
+              >
+                <i class="fas fa-envelope"></i> Módulo de Mensajes
+              </a>
+            </div>
+            </div>
         </section>
 
         <section class="content">
@@ -147,11 +159,11 @@
         alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
         alertDiv.setAttribute("role", "alert");
         alertDiv.innerHTML = `
- <span>${message}</span>
- <button type="button" class="close" data-dismiss="alert" aria-label="Close">
- <span aria-hidden="true">&times;</span>
- </button>
- `;
+<span>${message}</span>
+<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+<span aria-hidden="true">&times;</span>
+</button>
+`;
         container.appendChild(alertDiv);
 
         // Opcional: Desaparecer el mensaje después de 5 segundos si no es un error crítico

@@ -1,16 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styleINd.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu</title>
+  <title>Menú Principal</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='styleINd.css') }}">
+  
+  <style>
+  
+  </style>
 </head>
 <body>
-  <h1>Menu</h1>
-  <ul>
-    <li><a href="{{ url_for('mensajes') }}">Ver mensajes </a></li>
-    <li><a href="{{ url_for('estadisticas') }}">Estadisticas del juego</a></li>
-  </ul>
+  <div class="menu-container">
+    <h1>
+        <i class="fas fa-th-large"></i> Menú Principal
+    </h1>
+    <ul>
+      <li>
+        <a href="{{ url_for('mensajes') }}">
+            <span><i class="fas fa-envelope"></i> Ver Mensajes</span>
+            <i class="fas fa-angle-right"></i>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('estadisticas') }}">
+            <span><i class="fas fa-chart-line"></i> Estadísticas del Juego</span>
+            <i class="fas fa-angle-right"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
 </body>
 </html>

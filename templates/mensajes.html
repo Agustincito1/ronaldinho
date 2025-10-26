@@ -2,20 +2,30 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <title>Mensajes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+
 </head>
 <body>
   <header>
-    <h1>📩 Lista de mensajes</h1>
+    <h1><i class="fas fa-envelope-open-text"></i> Lista de Mensajes</h1>
   </header>
   <main>
-      {% if mensajes %}
+    {% if mensajes %}
+      <ul>
         {% for m in mensajes %}
           <li class="mensaje-item">
             <h2 class="pregunta">{{ m.pregunta }}</h2>
 
+            <p style="font-weight: bold; margin-bottom: 5px;">Opciones disponibles:</p>
             <ul class="opciones">
               {% for opcion in m.opciones %}
                 <li>{{ opcion }}</li>
@@ -28,11 +38,15 @@
             </div>
           </li>
         {% endfor %}
+      </ul>
 
-      {% else %}
-        <p class="no-mensaje">No hay mensajes en la base de datos.</p>
-      {% endif %}
-      <a class="btn-volver" href="{{ url_for('index') }}">⬅ Volver al menú</a>
+    {% else %}
+      <p class="no-mensaje">No hay mensajes en la base de datos.</p>
+    {% endif %}
+
+    <div style="text-align: center;">
+      <a class="btn-volver" href="{{ url_for('index') }}">Volver al menú</a>
+    </div>
   </main>
   <footer>
     <p>Página creada por Agustin Lazaro Ardeola De Olivera</p>

@@ -104,11 +104,10 @@ while True:
                 if event.key == pygame.K_RETURN:
                     execute = True
             
-
+            
             if execute:
                 if opcion == 0:
                     usuario_actual = login_usuario()
-
                     if usuario_actual:
                         menu = False
                         menuGame = True
@@ -170,7 +169,6 @@ while True:
                 if event.key == pygame.K_RETURN:
                     execute = True
                     
-
             if execute:
                 if opcion == 0:
                     menuGame = False
@@ -250,6 +248,7 @@ while True:
     # RANKING
     # =======================
     if ranking:
+        print("ranking en proceso")
         show_ranking()
         continue
 

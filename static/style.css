@@ -1,139 +1,201 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
 
-/* Fondo y layout */
-body {
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: #fff;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
+    /* VARIABLES SIMULADAS DE BOOTSTRAP/ADMINLTE */
+    :root {
+      --primary: #007bff; /* Azul primario */
+      --secondary: #6c757d; /* Gris secundario */
+      --success: #28a745; /* Verde éxito */
+      --warning: #ffc107; /* Amarillo advertencia */
+      --light: #f8f9fa; /* Fondo claro */
+      --body-bg: #f4f6f9; /* Fondo de la página (similar a AdminLTE) */
+      --border-color: #dee2e6;
+      --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra suave */
+      --spacing: 15px;
+    }
 
-/* Header */
-header h1 {
-  font-size: 2rem;
-  margin-bottom: 25px;
-  text-align: center;
-}
+    /* 1. ESTRUCTURA Y FONDO */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: var(--body-bg);
+      margin: 0;
+      padding: 0;
+    }
+    main {
+      padding: var(--spacing) 0 60px 0; /* Espacio para el footer fijo */
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: var(--spacing);
+      padding-right: var(--spacing);
+    }
+    header {
+      background-color: #ffffff;
+      padding: 20px var(--spacing);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--card-shadow);
+      margin-bottom: 20px;
+    }
+    header h1 {
+      color: var(--primary);
+      margin: 0;
+      font-size: 1.8rem;
+    }
 
-/* Lista de mensajes */
-.mensaje-lista {
-  list-style: none;
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 20px;
-}
+    /* 2. ESTILO DE MENSAJES (SIMULACIÓN DE CARDS) */
+    ul:not(.opciones) { /* Asegura que solo aplique a la lista principal */
+        list-style: none;
+        padding: 0;
+    }
 
-/* Cada mensaje */
-.mensaje-item {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 18px;
-  border-radius: 15px;
-  margin-bottom: 15px;
-  font-size: 1.05rem;
-  transition: background 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
+    .mensaje-item {
+      list-style: none;
+      background-color: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      margin-bottom: var(--spacing);
+      padding: var(--spacing);
+      box-shadow: var(--card-shadow);
+      transition: box-shadow 0.3s ease;
+      /* Simular el borde izquierdo primario */
+      border-left: 5px solid var(--primary); 
+    }
+    .mensaje-item:hover {
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
 
-.mensaje-item:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
+    .pregunta {
+      font-size: 1.25rem;
+      color: #343a40;
+      margin-top: 0;
+      margin-bottom: var(--spacing);
+      padding-bottom: 5px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .pregunta::before {
+        content: "\f059"; /* Icono de pregunta de Font Awesome */
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        color: var(--info);
+        margin-right: 8px;
+    }
 
-/* Pregunta */
-.pregunta {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
 
-/* Opciones */
-.opciones {
-  list-style: none;
-  margin-bottom: 12px;
-}
+    /* 3. OPCIONES */
+    .opciones {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 10px;
+      margin-bottom: var(--spacing);
+    }
+    .opciones li {
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.3rem;
+      margin-bottom: 5px;
+      background-color: var(--light); /* Color de fondo claro */
+      font-size: 0.95rem;
+      border: 1px solid #e9ecef;
+    }
+    .opciones li::before {
+        content: "\f111"; /* Icono de punto de Font Awesome */
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        color: var(--secondary);
+        margin-right: 8px;
+        font-size: 0.7rem;
+    }
 
-.opciones li {
-  background: rgba(255, 255, 255, 0.15);
-  margin-bottom: 6px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  transition: background 0.3s;
-}
+    /* 4. INFO EXTRA */
+    .info-extra {
+      border-top: 1px solid var(--border-color);
+      padding-top: var(--spacing);
+      font-size: 1rem;
+    }
+    .respuesta {
+      color: var(--success); /* Éxito para la respuesta */
+      font-weight: bold;
+    }
+    .respuesta strong::before {
+        content: "\f058"; /* Icono de check de Font Awesome */
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        margin-right: 5px;
+    }
 
-.opciones li:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
+    .usuario {
+      color: #343a40; /* Texto oscuro para el usuario */
+      font-weight: bold;
+    }
+    .usuario strong::before {
+        content: "\f007"; /* Icono de usuario de Font Awesome */
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        margin-right: 5px;
+        color: var(--secondary);
+    }
 
-/* Información extra */
-.info-extra {
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-  padding-top: 10px;
-  font-size: 0.95rem;
-  opacity: 0.9;
-}
+    .no-mensaje {
+      text-align: center;
+      padding: 20px;
+      background-color: var(--warning); 
+      color: #343a40;
+      border-radius: 0.5rem;
+      font-weight: bold;
+      border: 1px solid #e0a800;
+    }
+    .no-mensaje::before {
+        content: "\f071"; /* Icono de advertencia de Font Awesome */
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        margin-right: 8px;
+    }
 
-.respuesta strong {
-  color: #ffd166;
-}
 
-.usuario strong {
-  color: #06d6a0;
-}
+    /* 5. BOTÓN VOLVER (Simulación de btn btn-secondary btn-lg) */
+    .btn-volver {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 30px; /* Más espacio en la parte inferior */
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      color: #ffffff;
+      background-color: var(--secondary);
+      border: 1px solid var(--secondary);
+      border-radius: 0.25rem;
+      transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
+    }
+    .btn-volver:hover {
+      background-color: #5a6268;
+      box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+    }
+    .btn-volver::before {
+        content: "\f060"; /* Flecha izquierda de Font Awesome */
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        margin-right: 8px;
+    }
 
-/* Texto cuando no hay mensajes */
-.no-mensaje {
-  font-size: 1.2rem;
-  margin-bottom: 20px;
-  text-align: center;
-}
 
-/* Botón volver */
-.btn-volver {
-  display: inline-block;
-  padding: 12px 22px;
-  background: #ff6f61;
-  color: white;
-  text-decoration: none;
-  border-radius: 10px;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
+    /* 6. FOOTER */
+    footer {
+      background-color: #ffffff;
+      color: var(--secondary);
+      text-align: center;
+      padding: 10px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      /* Fijar el footer como en AdminLTE */
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
 
-.btn-volver:hover {
-  background: #ff4b47;
-  transform: scale(1.05);
-}
-
-/* Footer */
-footer {
-  margin-top: auto;
-  text-align: center;
-  font-size: 0.9rem;
-  opacity: 0.8;
-  padding-top: 15px;
-}
-
-/* Responsividad */
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 1.5rem;
-  }
-
-  .mensaje-item {
-    font-size: 1rem;
-    padding: 12px;
-  }
-
-  .btn-volver {
-    width: 100%;
-    text-align: center;
-  }
-}
+    /* 7. RESPONSIVE SIMPLE */
+    @media (max-width: 768px) {
+        .pregunta {
+            font-size: 1.1rem;
+        }
+        .mensaje-item {
+            padding: 10px;
+        }
+    }

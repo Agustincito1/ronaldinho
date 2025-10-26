@@ -18,17 +18,18 @@ def SacarUsuario(id):
 ARCHIVO_RESULTADOS = './utils/regist/resultados.txt'
 
 def analizar_resultados_usuario(user_id):
-    stats_por_usuario = defaultdict(lambda: {'Ganó': 0, 'Perdió': 0, 'Empató': 0, 'Total': 0, 'Partidas_Mes': defaultdict(int)})
+    stats_por_usuario = defaultdict(lambda: {'G': 0, 'P': 0, 'E': 0, 'Total': 0, 'Partidas_Mes': defaultdict(int)})
     
     # 1. Leer y Procesar el Archivo
     try:
         with open(ARCHIVO_RESULTADOS, 'r', encoding="utf-8") as f:
             for linea in f:
                 try:
-                    id_str, resultado, fecha = linea.strip().split(',')
+                   
+                    id_tabla, id_str, fecha, resultado, p, n = linea.strip().split(',')
                     current_user_id = int(id_str)
+                    
                     if current_user_id == user_id:
-                        
                         mes = int(fecha.split('-')[1]) 
                         stats_por_usuario[current_user_id][resultado] += 1
                         stats_por_usuario[current_user_id]['Total'] += 1
@@ -36,10 +37,13 @@ def analizar_resultados_usuario(user_id):
                         
                 except ValueError:
                     pass 
-                
+    
+
     except FileNotFoundError:
         print(f"Error: El archivo '{ARCHIVO_RESULTADOS}' no fue encontrado. Asegúrate de que esté en el directorio correcto.")
         return None
+    
+
 
     if user_id in stats_por_usuario:
         stats = stats_por_usuario[user_id]
@@ -51,9 +55,9 @@ def analizar_resultados_usuario(user_id):
         resultado_final = {
             'ID_Usuario': user_id,
             'Estadisticas': {
-                'Gana': stats['Ganó'],
-                'Pierde': stats['Perdió'],
-                'Empate': stats['Empató'],
+                'Gana': stats['G'],
+                'Pierde': stats['P'],
+                'Empate': stats['E'],
                 'Cantidad_Partidas': stats['Total']
             },
             'Partidas_Por_Mes': partidas_mensuales

@@ -1,8 +1,6 @@
 from collections import defaultdict
 import os
 
-# --- CONFIGURACIÓN DE LONGITUD FIJA PARA ARCHIVOS ---
-# Nota: Asumimos que ID en usuarios.txt está con zfill(2)
 LONGITUD_ID_RESUMEN = 2      # ID de usuario (e.g., '01')
 LONGITUD_CONTADOR = 5        # Contador de eventos (e.g., '00042')
 RUTA_USUARIOS = "./utils/regist/usuarios.txt"
@@ -12,10 +10,6 @@ RUTA_RESUMEN = "./utils/regist/resumen.txt"
 # --- NUEVAS FUNCIONES DE ESTADÍSTICAS INDIVIDUALES ---
 
 def sacar_usuario(user_id):
-    """
-    Función para extraer el nombre del usuario dado su ID.
-    Asume que el ID es el primer campo y el Nombre el segundo en usuarios.txt.
-    """
     usuario = "ID Desconocido"
     try:
         with open(RUTA_USUARIOS, "r", encoding="utf-8") as f:
@@ -35,10 +29,6 @@ def sacar_usuario(user_id):
     return usuario
 
 def estadisticas_usuario(user_id, anio=None):
-    """
-    Calcula estadísticas de juego (basadas en colisiones) para un usuario específico, 
-    filtrando opcionalmente por año.
-    """
     # Inicializamos contadores
     victorias = 0
     derrotas = 0
@@ -103,15 +93,6 @@ def estadisticas_usuario(user_id, anio=None):
 # --- FUNCIÓN DE RESUMEN GLOBAL (Mantenida) ---
 
 def resumenCol():
-    """
-    Lee todos los registros de eventos, cuenta las colisiones por tipo 
-    para cada ID de usuario y escribe el resumen en un archivo de longitud fija, 
-    SIN incluir el nombre del usuario.
-    Formato de salida fijo: ID(2),Pelota(5),ArcoDerecho(5),ArcoIzquierdo(5),Bot(5)\n (27 bytes)
-    """
-    
-    # 1. Leer usuarios para obtener solo los IDs válidos
-    # Esto asegura que solo procesemos IDs que existen en el sistema.
     usuarios_ids = set()
     try:
         with open(RUTA_USUARIOS, "r", encoding="utf-8") as f:

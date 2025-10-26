@@ -1,66 +1,99 @@
-/* Reset básico */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
+  /* VARIABLES SIMULADAS DE BOOTSTRAP/ADMINLTE */
+    :root {
+      --primary: #007bff; /* Azul primario */
+      --secondary: #6c757d; /* Gris secundario */
+      --info: #17a2b8; /* Azul claro de info */
+      --body-bg: #f4f6f9; /* Fondo de la página (similar a AdminLTE) */
+      --border-color: #dee2e6;
+      --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra suave */
+      --spacing: 20px;
+    }
 
-/* Fondo y centrado */
-body {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: #fff;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  text-align: center;
-}
+    /* 1. ESTRUCTURA Y FONDO */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: var(--body-bg);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh; /* Centra el contenido verticalmente en la página */
+      padding: var(--spacing);
+    }
+    
+    /* Contenedor principal para simular una tarjeta (Card) */
+    .menu-container {
+      background-color: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: var(--spacing) calc(var(--spacing) * 1.5);
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1); /* Sombra más pronunciada para el centro */
+      max-width: 450px;
+      width: 100%;
+    }
 
-/* Título */
-h1 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-}
+    /* 2. TÍTULO */
+    .menu-container h1 {
+      color: var(--primary);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .menu-container h1 i {
+        margin-right: 10px;
+    }
 
-/* Lista */
-ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 100%;
-  max-width: 400px;
-}
+    /* 3. LISTA Y ENLACES (ESTILO BOTÓN) */
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 15px;
+    }
+    li a {
+      /* Simulación de un botón de AdminLTE (btn-info o btn-primary) */
+      display: block;
+      padding: 15px 20px;
+      background-color: var(--primary);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 0.35rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    li:nth-child(2) a {
+        background-color: var(--info); /* Color diferente para distinguir las opciones */
+    }
 
-/* Enlaces */
-ul li a {
-  display: block;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  text-decoration: none;
-  color: #fff;
-  font-size: 1.2rem;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
+    /* Efecto Hover */
+    li a:hover {
+      background-color: #0056b3; /* Tono más oscuro de primary */
+      transform: translateY(-2px);
+      box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+    li:nth-child(2) a:hover {
+        background-color: #117a8b; /* Tono más oscuro de info */
+    }
 
-ul li a:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
+    /* Estilo de los iconos dentro del enlace */
+    li a i.fa-angle-right {
+        font-size: 1.5rem;
+    }
 
-/* Responsividad */
-@media (min-width: 600px) {
-  ul {
-    flex-direction: row;
-    justify-content: center;
-  }
-
-  ul li {
-    flex: 1;
-  }
-}
+    @media (max-width: 480px) {
+        .menu-container {
+            padding: var(--spacing);
+        }
+    }
