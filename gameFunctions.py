@@ -1,7 +1,13 @@
 import sys
 from config import WIDTH, HEIGHT, duracion_partido, fuente, fuente_chica, fondoResponsive, BLANCO, ROJO, FPS, ventana, clock, arcoImg, fuente_chica2,AZUL_OSCURO
-from utils.functions.functionRegister import registrar_resultado
-from utils.functions.registroColisiones import registroContinuo
+from utils.functions.registroColisiones import registroContinuo,  registrar_resultado
+from utils.functions.obc import ArchivoEventos, COLUMNAS_EVENTOS, RUTA_REGISTRO_EVENTOS
+
+gestor_eventos = ArchivoEventos(
+    COLUMNAS_EVENTOS, 
+    RUTA_REGISTRO_EVENTOS, 
+)
+
 from utils.functions.othersFunction import fisicas
 from conn import get_connection
 import pygame
@@ -260,13 +266,13 @@ def gameShow(id_usuario, goles_bot, goles_jugador, last_event_time, jugador, bot
                 ventana.blit(fondoResponsive, (0, 0))
                 if goles_jugador > goles_bot:
                     resultado = "Victoria del Jugador"
-                    registrar_resultado(id_usuario, "Ganó")
+                    registrar_resultado(id_usuario, "W")
                 elif goles_bot > goles_jugador:
                     resultado = "Victoria del Bot"
-                    registrar_resultado(id_usuario, "Perdió")
+                    registrar_resultado(id_usuario, "L")
                 else:
                     resultado = "Empate"
-                    registrar_resultado(id_usuario, "Empató")
+                    registrar_resultado(id_usuario, "N")
                 
                 accion = game_over_screen(resultado, goles_jugador, goles_bot, contador)
 
@@ -358,7 +364,7 @@ def gameShow(id_usuario, goles_bot, goles_jugador, last_event_time, jugador, bot
                 bot.rect.y = HEIGHT - bot.rect.height
                 contador.resume(pygame.time.get_ticks())
 
-            eventVar = registroContinuo(jugador, id_usuario, pelota, fecha, bot, arco_derecho, arco_izquierdo)
+            eventVar = registroContinuo(gestor_eventos, jugador, id_usuario, pelota, fecha, bot, arco_derecho, arco_izquierdo)
             now = pygame.time.get_ticks()
             pygame.display.flip()
         
