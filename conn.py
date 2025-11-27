@@ -18,7 +18,7 @@ def SacarUsuario(id):
 ARCHIVO_RESULTADOS = './utils/regist/resultados.txt'
 
 def analizar_resultados_usuario(user_id):
-    stats_por_usuario = defaultdict(lambda: {'G': 0, 'P': 0, 'E': 0, 'Total': 0, 'Partidas_Mes': defaultdict(int)})
+    stats_por_usuario = defaultdict(lambda: {'W': 0, 'L': 0, 'N': 0, 'Total': 0, 'Partidas_Mes': defaultdict(int)})
     
     # 1. Leer y Procesar el Archivo
     try:
@@ -55,9 +55,9 @@ def analizar_resultados_usuario(user_id):
         resultado_final = {
             'ID_Usuario': user_id,
             'Estadisticas': {
-                'Gana': stats['G'],
-                'Pierde': stats['P'],
-                'Empate': stats['E'],
+                'Gana': stats['W'],
+                'Pierde': stats['L'],
+                'Empate': stats['N'],
                 'Cantidad_Partidas': stats['Total']
             },
             'Partidas_Por_Mes': partidas_mensuales

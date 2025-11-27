@@ -173,11 +173,11 @@ def cargar_estadisticas_por_mes(path="./utils/regist/resultados.txt"):
 
                 resultado_char = resultado[0].upper() if resultado else ''
 
-                if resultado_char == "G" or resultado_char == "W" or resultado == "Ganó":
+                if resultado_char == "W" or resultado_char == "W" or resultado == "Ganó":
                     stats_por_mes[mes][uid]['ganados'] += 1
-                elif resultado_char == "P" or resultado_char == "L" or resultado == "Perdió":
+                elif resultado_char == "L" or resultado_char == "L" or resultado == "Perdió":
                     stats_por_mes[mes][uid]['perdidos'] += 1
-                elif resultado_char == "E" or resultado_char == "D" or resultado == "Empató":
+                elif resultado_char == "N" or resultado_char == "D" or resultado == "Empató":
                     stats_por_mes[mes][uid]['empates'] += 1
                 
     except FileNotFoundError:
