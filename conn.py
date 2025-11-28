@@ -3,70 +3,9 @@ import mysql.connector
 from informe.informeParaWeb import estadisticas_usuario
 from collections import defaultdict
 import json
-def SacarUsuario(id):
-    # Leer usuarios
-    usuario = ""
-    with open("./utils/regist/usuarios.txt", "r", encoding="utf-8") as f:
-        for linea in f:
-            partes = linea.strip().split(",")
-            if int(partes[0]) == int(id):
-                if len(partes) >= 2:
-                    usuario = partes[1]
-    return usuario
+from utils.puntero.punteroObj import PunteroObj
 
-
-ARCHIVO_RESULTADOS = './utils/regist/resultados.txt'
-
-def analizar_resultados_usuario(user_id):
-    stats_por_usuario = defaultdict(lambda: {'W': 0, 'L': 0, 'N': 0, 'Total': 0, 'Partidas_Mes': defaultdict(int)})
-    
-    # 1. Leer y Procesar el Archivo
-    try:
-        with open(ARCHIVO_RESULTADOS, 'r', encoding="utf-8") as f:
-            for linea in f:
-                try:
-                   
-                    id_tabla, id_str, fecha, resultado, p, n = linea.strip().split(',')
-                    current_user_id = int(id_str)
-                    
-                    if current_user_id == user_id:
-                        mes = int(fecha.split('-')[1]) 
-                        stats_por_usuario[current_user_id][resultado] += 1
-                        stats_por_usuario[current_user_id]['Total'] += 1
-                        stats_por_usuario[current_user_id]['Partidas_Mes'][mes] += 1
-                        
-                except ValueError:
-                    pass 
-    
-
-    except FileNotFoundError:
-        print(f"Error: El archivo '{ARCHIVO_RESULTADOS}' no fue encontrado. Asegúrate de que esté en el directorio correcto.")
-        return None
-    
-
-
-    if user_id in stats_por_usuario:
-        stats = stats_por_usuario[user_id]
-        
-        partidas_mensuales = {}
-        for mes in range(1, 13):
-            partidas_mensuales[mes] = stats['Partidas_Mes'].get(mes, 0)
-        
-        resultado_final = {
-            'ID_Usuario': user_id,
-            'Estadisticas': {
-                'Gana': stats['W'],
-                'Pierde': stats['L'],
-                'Empate': stats['N'],
-                'Cantidad_Partidas': stats['Total']
-            },
-            'Partidas_Por_Mes': partidas_mensuales
-        }
-        
-        return resultado_final
-    else:
-        return None
-
+puntero = PunteroObj()
 
 app = Flask(__name__)
 
@@ -108,24 +47,21 @@ def estadisticas():
 
 @app.route('/api/stats/<int:user_id>')
 def estadisticas_usuario_web(user_id):
-    nombre = SacarUsuario(user_id)
-    datos_analizados = analizar_resultados_usuario(user_id)
+    usuario = puntero.sacar_usuario(user_id)
+    datos_analizados = puntero.getResultadosUsuario(user_id)
+
+    print(datos_analizados)
     if not datos_analizados:
         return jsonify({"error": f"Usuario con ID {user_id} no encontrado (o sin partidas)."}), 404
     
-    est = datos_analizados['Estadisticas']
-    mensual = datos_analizados['Partidas_Por_Mes']
-
-    resumen_mensual_lista = [mensual.get(mes, 0) for mes in range(1, 13)]
 
     response_json = {
         'ID_Usuario': user_id,
-        'Nombre_Usuario': nombre if nombre else "Anónimo",
-        'totalPartidas': est['Cantidad_Partidas'],
-        'victorias': est['Gana'],
-        'derrotas': est['Pierde'],
-        'empates': est['Empate'],
-        'resumenMeses': resumen_mensual_lista 
+        'Nombre_Usuario': usuario[1].strip(),
+        # 'victorias': est['Gana'],
+        # 'derrotas': est['Pierde'],
+        # 'empates': est['Empate'],
+        # 'resumenMeses': resumen_mensual_lista 
     }
     
     return jsonify(response_json)

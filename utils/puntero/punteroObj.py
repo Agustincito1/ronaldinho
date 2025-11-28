@@ -143,6 +143,82 @@ class PunteroObj:
         pass
 
     
+    def sacar_usuario(self, id):
+        cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
+
+        try:
+            with open(self.RUTAS[2], 'rb') as f:
+                f.seek((id * resultadoColumnaU)- resultadoColumnaU) 
+                registro = f.read(resultadoColumnaU).decode("utf-8").strip().split(",")
+                return registro
+            
+        except FileNotFoundError:
+            print(f"Error: El archivo '{self.RUTAS[2]}' no fue encontrado. Asegúrate de que esté en el directorio correcto.")
+            return None
+
+        pass
+
+
+    def getResultadosUsuario(self, id_usuario):
+        cantidadRegistros,  resultColumna = self.calcular(self.COLUMNAS_RESULTADOS, 1)
+        usuario = self.sacar_usuario(id_usuario)
+
+        if usuario is None:
+            return []
+
+        inicio_resultado = int(usuario[4])
+        fin_resultado = int(usuario[5])
+
+
+        print(fin_resultado)
+
+        ANIO_INICIO = 2025
+        CANT_ANIOS = 5
+        MESES = 12
+
+        matriz = [
+            [
+                {
+                    "cantidadResultados": 0,
+                    "victorias": 0,
+                    "derrotas": 0,
+                    "empates": 0
+                }
+                for _ in range(MESES)
+            ]
+            for _ in range(CANT_ANIOS)
+        ]
+
+        if inicio_resultado == 0 and fin_resultado == 0:
+            return 0, 0
+        try:
+            with open(self.RUTAS[1], 'rb') as f:
+                while True:
+                    f.seek(resultColumna * (inicio_resultado - 1))
+                    registro = f.read(resultColumna).decode("utf-8").strip().split(",")
+                    if int(registro[-1]) != 0:
+                        fecha_str = registro[2].strip()
+                        fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+                        anio_index = fecha.year - ANIO_INICIO
+                        mes_index = fecha.month - 1
+                        matriz[anio_index][mes_index][0] += 1
+                        inicio_resultado = int(registro[-1])
+                    else:
+                        fecha_str = registro[2].strip()
+                        fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+                        anio_index = fecha.year - ANIO_INICIO
+                        mes_index = fecha.month - 1
+                        matriz[anio_index][mes_index][0] += 1 
+                        break
+                    
+            return matriz
+
+        except FileNotFoundError:
+            print(f"Error: El archivo '{self.RUTAS[1]}' no fue encontrado. Asegúrate de que esté en el directorio correcto.")
+            return []
+
+        pass
+    
     def registrarResultado(self, id_usuario, fecha, resultado):
         cantidadRegistros,  resultColumna = self.calcular(self.COLUMNAS_RESULTADOS, 1)
         cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
