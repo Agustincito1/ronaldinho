@@ -75,8 +75,7 @@ except Exception:
 	logoMenuResponsive = None
 	
 
-    # ID (2 caracteres) + , (1) + Nombre (18) + , (1) + Contraseña (18) + \n (1) = 41 bytes
-REGISTRO_SIZE = 41
+REGISTRO_SIZE = 2 + 1 + 18 + 1 + 18 + 1 + 5 + 1 + 5 + 1 + 5 + 1 + 5 
 MAX_CARACTERES = 18 
 # Asumiendo que el ID nunca superará 99. Si lo hace, debes aumentar REGISTRO_SIZE.
 LONGITUD_ID = 2

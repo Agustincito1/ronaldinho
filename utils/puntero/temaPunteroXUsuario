@@ -1,0 +1,3 @@
+id, usuario, password, IResultado, FResultado, IEvento, FEvento, ITotalEvento, FTotalEvento 
+
+Matriz 3 dimensiones, año mes eventos

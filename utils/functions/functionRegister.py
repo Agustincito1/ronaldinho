@@ -171,10 +171,7 @@ def dibujar_login(nombre, password, error, ingresando_password, current_width, c
 
 
 def login_usuario():
-    """
-    Gestiona el login. Utiliza un mapeo Nombre->ID al inicio 
-    y luego usa seek() para ir directamente al registro.
-    """
+
     
     nombre = ""
     password = ""
@@ -279,7 +276,7 @@ def login_usuario():
                                 registro = registro_bytes.decode('utf-8').rstrip() 
 
                                 # Desempaquetar el registro. Los campos nombre y pass aún tienen los espacios de relleno.
-                                id_reg, nombre_reg_relleno, pass_reg_relleno = registro.split(',')
+                                id_reg, nombre_reg_relleno, pass_reg_relleno, IE, FE, IR, FR  = registro.split(',')
                                 
                                 # Limpiamos los espacios de relleno de la contraseña para la comparación
                                 pass_almacenada = pass_reg_relleno.strip()
@@ -665,7 +662,7 @@ def validar_registro(nombre, password, usuarios, ultimo_id, current_error, curre
                     # Abrimos en modo texto para escribir la línea de texto
                     with open(RUTA_USUARIOS, "a", encoding="utf-8") as f:
                         # Escribimos el registro de 41 bytes (2+1+18+1+18+1 = 41)
-                        f.write(f"{id_formateado},{nombre_formateado},{password_formateada}\n")
+                        f.write(f"{id_formateado},{nombre_formateado},{password_formateada},00000,00000,00000,00000\n")
                     
                     usuarios_actualizados = usuarios + [nombre_limpio]
                     ultimo_id_actualizado = nuevo_id

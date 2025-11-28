@@ -1,13 +1,6 @@
 import sys
 from config import WIDTH, HEIGHT, duracion_partido, fuente, fuente_chica, fondoResponsive, BLANCO, ROJO, FPS, ventana, clock, arcoImg, fuente_chica2,AZUL_OSCURO
-from utils.functions.registroColisiones import registroContinuo,  registrar_resultado
-from utils.functions.obc import ArchivoEventos, COLUMNAS_EVENTOS, RUTA_REGISTRO_EVENTOS
-
-gestor_eventos = ArchivoEventos(
-    COLUMNAS_EVENTOS, 
-    RUTA_REGISTRO_EVENTOS, 
-)
-
+from utils.puntero.registroColisiones import registroContinuo,  registrar_resultado
 from utils.functions.othersFunction import fisicas
 from conn import get_connection
 import pygame
@@ -364,7 +357,7 @@ def gameShow(id_usuario, goles_bot, goles_jugador, last_event_time, jugador, bot
                 bot.rect.y = HEIGHT - bot.rect.height
                 contador.resume(pygame.time.get_ticks())
 
-            eventVar = registroContinuo(gestor_eventos, jugador, id_usuario, pelota, fecha, bot, arco_derecho, arco_izquierdo)
+            eventVar = registroContinuo(jugador, id_usuario, pelota, fecha, bot, arco_derecho, arco_izquierdo)
             now = pygame.time.get_ticks()
             pygame.display.flip()
         
