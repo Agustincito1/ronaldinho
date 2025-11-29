@@ -39,7 +39,7 @@ except Exception:
 fuente = pygame.font.Font(None, 120)
 fuente.set_bold(True)  
 fuente_chica = pygame.font.Font(None, 36)
-duracion_partido = 2
+duracion_partido = 15
 tiempo_inicio = pygame.time.get_ticks()
 partido_terminado = False
 

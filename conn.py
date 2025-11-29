@@ -45,25 +45,44 @@ def mensajes():
 def estadisticas():
     return render_template('estadisticas.html')
 
+@app.route('/colisiones')
+def colisiones():
+    return render_template('colisiones.html')
+
+
 @app.route('/api/stats/<int:user_id>')
 def estadisticas_usuario_web(user_id):
     usuario = puntero.sacar_usuario(user_id)
     datos_analizados = puntero.getResultadosUsuario(user_id)
 
-    print(datos_analizados)
     if not datos_analizados:
         return jsonify({"error": f"Usuario con ID {user_id} no encontrado (o sin partidas)."}), 404
-    
 
     response_json = {
         'ID_Usuario': user_id,
         'Nombre_Usuario': usuario[1].strip(),
-        # 'victorias': est['Gana'],
-        # 'derrotas': est['Pierde'],
-        # 'empates': est['Empate'],
-        # 'resumenMeses': resumen_mensual_lista 
+        'Estadisticas': datos_analizados
     }
     
+    return jsonify(response_json)
+
+
+
+@app.route('/api/colisiones/<int:user_id>')
+def colisiones_usuario_web(user_id):
+    usuario = puntero.sacar_usuario(user_id)
+    datos_analizados = puntero.getColisiones(user_id)
+
+    if not datos_analizados:
+        return jsonify({"error": f"Usuario con ID {user_id} no encontrado (o sin partidas)."}), 404
+
+    response_json = {
+        'ID_Usuario': user_id,
+        'Nombre_Usuario': usuario[1].strip(),
+        'Colisiones': datos_analizados
+    }
+    
+    print(response_json)
     return jsonify(response_json)
 
 

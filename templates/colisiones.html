@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Estadísticas de Colisiones por Usuario</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+
+    <style>
+        .table td, .table th { padding: 0.5rem; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+        <span class="navbar-text ml-auto">Estadísticas de Colisiones</span>
+    </nav>
+    
+    <div class="content-wrapper" style="min-height: 80vh;">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0 text-dark" id="user-stats-title">Estadísticas de Colisiones por Usuario</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+                            <li class="breadcrumb-item active">Colisiones</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="container-fluid">
+                
+                <div class="row mb-3">
+                    <div class="col-12 col-md-5">
+                        <div class="input-group">
+                            <input type="number" id="user-id-input" class="form-control" placeholder="Ingrese ID de Usuario" value="1" min="1">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button" id="load-stats-button">
+                                    <i class="fas fa-chart-bar"></i> Cargar Colisiones
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="loading-message" class="alert alert-info text-center">Ingrese un ID de usuario y presione "Cargar Colisiones".</div>
+                
+                <div id="dynamic-view-container" style="display:none;">
+
+                    <div id="resumen-total" class="row">
+                        </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div id="stats-card" class="card card-info card-outline">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-calendar-alt mr-1"></i>
+                                        Colisiones Mensuales del Año 
+                                        <span id="current-year" class="badge badge-info ml-2">...</span>
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button id="prev-year" class="btn btn-sm btn-outline-info" disabled>
+                                            <i class="fas fa-arrow-left"></i> Anterior
+                                        </button>
+                                        <button id="next-year" class="btn btn-sm btn-outline-info" disabled>
+                                            Siguiente <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table id="tabla-colisiones" class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mes</th>
+                                                    <th class="text-center">Total Colisiones</th>
+                                                    <th class="text-center text-primary">Colisiones Bot</th>
+                                                    <th class="text-center text-success">Colisiones Arco Derecho</th>
+                                                    <th class="text-center text-danger">Colisiones Arco Izquierdo</th>
+                                                    <th class="text-center text-warning">Colisiones Pelota</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                </tbody>
+                                            <tfoot>
+                                                <tr class="bg-light">
+                                                    <th>Total Anual</th>
+                                                    <th id="total-anual-colisiones" class="text-center">0</th>
+                                                    <th id="total-anual-bot" class="text-center text-primary">0</th>
+                                                    <th id="total-anual-arcoDerecho" class="text-center text-success">0</th>
+                                                    <th id="total-anual-arcoIzquierdo" class="text-center text-danger">0</th>
+                                                    <th id="total-anual-pelota" class="text-center text-warning">0</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="main-footer">Desarrollado con <strong>AdminLTE</strong>.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<script>
+    // Variables de configuración
+    const BASE_API_URL = '/api/colisiones/'; // Endpoint para colisiones
+    // El rango de años debe ser dinámico, se asume un rango inicial
+    const START_YEAR = 2025; 
+    const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    let userData = null; // Almacena los datos del backend
+    let currentYearIndex = 0; // Índice del año a mostrar (0 para el primer año)
+    let availableYears = []; // Se llena con años desde START_YEAR en base a la longitud de `Colisiones`
+
+    /**
+     * Función que renderiza la tabla para el año actual seleccionado (currentYearIndex).
+     */
+    function renderYearTable() {
+        if (!userData || !userData.Colisiones || userData.Colisiones.length === 0) {
+            $('#tabla-colisiones tbody').empty().append('<tr><td colspan="6" class="text-center">No hay datos de colisiones para este usuario.</td></tr>');
+            $('#total-anual-colisiones').text(0);
+            $('#current-year').text('N/A');
+            $('#prev-year, #next-year').prop('disabled', true);
+            return;
+        }
+
+        const currentYearStats = userData.Colisiones[currentYearIndex];
+        const currentYear = availableYears[currentYearIndex];
+        
+        const tbody = $('#tabla-colisiones tbody');
+        tbody.empty();
+        
+        let totalAnualColisiones = 0;
+        let totalAnualBot = 0;
+        let totalAnualArcoDerecho = 0;
+        let totalAnualArcoIzquierdo = 0;
+        let totalAnualPelota = 0;
+
+        // 1. Renderizar filas de la tabla (los 12 meses)
+        currentYearStats.forEach((stat, monthIndex) => {
+            const monthName = MONTHS[monthIndex];
+            
+            // Sumar a los totales anuales
+            totalAnualColisiones += stat.cantidadColisiones;
+            totalAnualBot += stat.bot;
+            totalAnualArcoDerecho += stat.arcoDerecho;
+            totalAnualArcoIzquierdo += stat.arcoIzquierdo;
+            totalAnualPelota += stat.pelota;
+            
+            let htmlRow = `
+                <tr>
+                    <td><i class="fas fa-calendar-day mr-2"></i> ${monthName}</td>
+                    <td class="text-center">${stat.cantidadColisiones}</td>
+                    <td class="text-center text-primary">${stat.bot}</td>
+                    <td class="text-center text-success">${stat.arcoDerecho}</td>
+                    <td class="text-center text-danger">${stat.arcoIzquierdo}</td>
+                    <td class="text-center text-warning">${stat.pelota}</td>
+                </tr>
+            `;
+            tbody.append(htmlRow);
+        });
+
+        // 2. Actualizar el pie de tabla (Total Anual)
+        $('#total-anual-colisiones').text(totalAnualColisiones);
+        $('#total-anual-bot').text(totalAnualBot);
+        $('#total-anual-arcoDerecho').text(totalAnualArcoDerecho);
+        $('#total-anual-arcoIzquierdo').text(totalAnualArcoIzquierdo);
+        $('#total-anual-pelota').text(totalAnualPelota);
+        
+        // 3. Actualizar el título y controles
+        $('#current-year').text(currentYear);
+        $('#prev-year').prop('disabled', currentYearIndex === 0);
+        $('#next-year').prop('disabled', currentYearIndex === availableYears.length - 1);
+        $('#stats-card .card-title').html(`
+            <i class="fas fa-calendar-alt mr-1"></i>
+            Colisiones Mensuales del Año 
+            <span id="current-year" class="badge badge-info ml-2">${currentYear}</span>
+        `);
+    }
+
+    /**
+     * Función que realiza la petición FETCH al endpoint del Backend.
+     */
+    function cargarEstadisticas(userID) {
+        userID = parseInt(userID);
+        if (isNaN(userID) || userID <= 0) {
+            $('#loading-message').removeClass('alert-info alert-danger').addClass('alert-warning').html('<strong>Advertencia:</strong> Ingrese un ID de usuario válido.');
+            $('#dynamic-view-container').hide();
+            return;
+        }
+
+        const API_URL = BASE_API_URL + userID;
+
+        // Mostrar mensaje de carga
+        $('#loading-message').removeClass('alert-danger alert-warning').addClass('alert-info').html(`Cargando colisiones para ID: <strong>${userID}</strong>...`);
+        $('#dynamic-view-container').hide();
+
+        fetch(API_URL)
+            .then(response => {
+                if (!response.ok) {
+                    // Si el backend devuelve 404, el mensaje de error es más específico
+                    throw new Error(`Error ${response.status}: Usuario con ID ${userID} no encontrado (o sin partidas).`);
+                }
+                return response.json(); 
+            })
+            .then(data => {
+                // 1. Almacenar los datos y configurar el array de años disponibles
+                userData = data;
+                
+                // Generar los años disponibles basándose en la longitud del array Colisiones
+                availableYears = Array.from({ length: data.Colisiones.length }, (_, i) => START_YEAR + i);
+                currentYearIndex = 0; // Mostrar siempre el primer año disponible
+
+                // 2. Generar el resumen total (Small Boxes)
+                renderTotalSummary(data);
+
+                // 3. Renderizar la vista del primer año
+                renderYearTable();
+                
+                // 4. Actualizar título y mostrar la interfaz
+                $('#user-stats-title').text(`Estadísticas de Colisiones para ${userData.Nombre_Usuario}`);
+                $('#loading-message').hide();
+                $('#dynamic-view-container').show();
+            })
+            .catch(error => {
+                console.error('Error al obtener los datos:', error);
+                $('#loading-message').removeClass('alert-info').addClass('alert-danger').html(`<strong>Error de Carga:</strong> ${error.message}`);
+                userData = null;
+                $('#dynamic-view-container').hide(); // Asegurarse de que se oculte en caso de error
+            });
+    }
+
+    /**
+     * Función para calcular y renderizar el resumen total (todos los años).
+     */
+    function renderTotalSummary(data) {
+        let totalColisiones = 0;
+        let totalBot = 0;
+        let totalArcoDerecho = 0;
+        let totalArcoIzquierdo = 0;
+        let totalPelota = 0;
+        
+        data.Colisiones.forEach(yearStats => {
+            yearStats.forEach(monthStat => {
+                totalColisiones += monthStat.cantidadColisiones;
+                totalBot += monthStat.bot;
+                totalArcoDerecho += monthStat.arcoDerecho;
+                totalArcoIzquierdo += monthStat.arcoIzquierdo;
+                totalPelota += monthStat.pelota;
+            });
+        });
+
+        const yearRange = availableYears.length > 0 ? `(${availableYears[0]}-${availableYears[availableYears.length - 1]})` : '';
+
+        const resumenTotalHTML = `
+            <div class="col-lg-3 col-6"><div class="small-box bg-info"><div class="inner"><h3>${totalColisiones}</h3><p>Total Colisiones ${yearRange}</p></div><div class="icon"><i class="fas fa-random"></i></div></div></div>
+            <div class="col-lg-3 col-6"><div class="small-box bg-primary"><div class="inner"><h3>${totalBot}</h3><p>Colisiones con Bot</p></div><div class="icon"><i class="fas fa-robot"></i></div></div></div>
+            <div class="col-lg-3 col-6"><div class="small-box bg-success"><div class="inner"><h3>${totalArcoDerecho}</h3><p>Colisiones Arco Derecho</p></div><div class="icon"><i class="fas fa-arrow-circle-right"></i></div></div></div>
+            <div class="col-lg-3 col-6"><div class="small-box bg-danger"><div class="inner"><h3>${totalArcoIzquierdo}</h3><p>Colisiones Arco Izquierdo</p></div><div class="icon"><i class="fas fa-arrow-circle-left"></i></div></div></div>
+            <div class="col-12"><div class="small-box bg-warning"><div class="inner"><h3>${totalPelota}</h3><p>Colisiones con Pelota</p></div><div class="icon"><i class="fas fa-circle"></i></div></div></div>
+        `;
+        $('#resumen-total').html(resumenTotalHTML);
+    }
+    
+    // Event Listeners y Lógica de Navegación
+    $(document).ready(function() {
+        // Listener del botón de Carga
+        $('#load-stats-button').on('click', function() {
+            const userID = $('#user-id-input').val();
+            cargarEstadisticas(userID);
+        });
+        
+        // Permite cargar presionando Enter en el input
+        $('#user-id-input').on('keypress', function(e) {
+            if (e.which === 13) { e.preventDefault(); $('#load-stats-button').click(); }
+        });
+        
+        // Lógica de navegación por Año (Botones Anterior/Siguiente)
+        $('#prev-year').on('click', function() {
+            if (currentYearIndex > 0) {
+                currentYearIndex--;
+                renderYearTable();
+            }
+        });
+
+        $('#next-year').on('click', function() {
+            if (currentYearIndex < availableYears.length - 1) {
+                currentYearIndex++;
+                renderYearTable();
+            }
+        });
+        
+        // Carga inicial al iniciar la página
+        const defaultID = $('#user-id-input').val();
+        // Nota: Esta llamada fallará en un entorno local sin el backend corriendo,
+        // pero es el comportamiento esperado para cargar datos al inicio.
+        cargarEstadisticas(defaultID); 
+    });
+</script>
+
+</body>
+</html>

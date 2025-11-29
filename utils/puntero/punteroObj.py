@@ -158,6 +158,91 @@ class PunteroObj:
 
         pass
 
+    def getColisiones(self, id_usuario):
+        cantidadRegistros,  resultColumna = self.calcular(self.COLUMNAS_EVENTOS, 0)
+        usuario = self.sacar_usuario(id_usuario)
+
+        if usuario is None:
+            return []
+
+        inicio_resultado = int(usuario[4])
+        fin_resultado = int(usuario[5])
+
+
+        print(fin_resultado)
+
+        ANIO_INICIO = 2025
+        CANT_ANIOS = 5
+        MESES = 12
+        ## matriz[anio][mes][{cantidadResultados,victorias,derrotas,empates}]
+
+        matriz = [
+            [
+                {
+                    "cantidadColisiones": 0,
+                    "bot": 0,
+                    "arcoDerecho": 0,
+                    "arcoIzquierdo": 0,
+                    "pelota": 0,
+                }
+                for _ in range(MESES)
+            ]
+            for _ in range(CANT_ANIOS)
+        ]
+
+        if inicio_resultado == 0 and fin_resultado == 0:
+            return 0, 0
+        try:
+            with open(self.RUTAS[0], 'rb') as f:
+                while True:
+                    f.seek(resultColumna * (inicio_resultado - 1))
+                    registro = f.read(resultColumna).decode("utf-8").strip().split(",")
+
+                    if int(registro[-1]) != 0:
+                        fecha_str = registro[2].strip()
+                        fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+                        anio_index = fecha.year - ANIO_INICIO
+                        mes_index = fecha.month - 1
+                        if registro[3].strip() == "Pelota":
+                            matriz[anio_index][mes_index]["pelota"] += 1
+                        elif registro[3].strip() == "ArcoIzquierd":
+                            matriz[anio_index][mes_index]["arcoIzquierdo"] += 1
+                        elif registro[3].strip() == "ArcoDerecho":
+                            matriz[anio_index][mes_index]["arcoDerecho"] += 1
+                        elif registro[3].strip() == "Bot":
+                            matriz[anio_index][mes_index]["bot"] += 1
+
+                        matriz[anio_index][mes_index]["cantidadColisiones"] += 1
+
+                        inicio_resultado = int(registro[-1])
+                    else:
+
+
+                        fecha_str = registro[2].strip()
+                        fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+                        anio_index = fecha.year - ANIO_INICIO
+                        mes_index = fecha.month - 1
+
+                        if registro[3].strip() == "Pelota":
+                            matriz[anio_index][mes_index]["pelota"] += 1
+                        elif registro[3].strip() == "ArcoIzquierd":
+                            matriz[anio_index][mes_index]["arcoIzquierdo"] += 1
+                        elif registro[3].strip() == "ArcoDerecho":
+                            matriz[anio_index][mes_index]["arcoDerecho"] += 1
+                        elif registro[3].strip() == "Bot":
+                            matriz[anio_index][mes_index]["bot"] += 1
+
+                        matriz[anio_index][mes_index]["cantidadColisiones"] += 1
+                        break
+                    
+            return matriz
+
+        except FileNotFoundError:
+            print(f"Error: El archivo '{self.RUTAS[0]}' no fue encontrado. Asegúrate de que esté en el directorio correcto.")
+            return []
+
+        pass
+
 
     def getResultadosUsuario(self, id_usuario):
         cantidadRegistros,  resultColumna = self.calcular(self.COLUMNAS_RESULTADOS, 1)
@@ -175,6 +260,7 @@ class PunteroObj:
         ANIO_INICIO = 2025
         CANT_ANIOS = 5
         MESES = 12
+        ## matriz[anio][mes][{cantidadResultados,victorias,derrotas,empates}]
 
         matriz = [
             [
@@ -196,19 +282,35 @@ class PunteroObj:
                 while True:
                     f.seek(resultColumna * (inicio_resultado - 1))
                     registro = f.read(resultColumna).decode("utf-8").strip().split(",")
+
                     if int(registro[-1]) != 0:
                         fecha_str = registro[2].strip()
                         fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
                         anio_index = fecha.year - ANIO_INICIO
                         mes_index = fecha.month - 1
-                        matriz[anio_index][mes_index][0] += 1
+                        if registro[3].strip() == "W":
+                            matriz[anio_index][mes_index]["victorias"] += 1
+                        elif registro[3].strip() == "L":
+                            matriz[anio_index][mes_index]["derrotas"] += 1
+                        elif registro[3].strip() == "N":
+                            matriz[anio_index][mes_index]["empates"] += 1
+                        matriz[anio_index][mes_index]["cantidadResultados"] += 1
                         inicio_resultado = int(registro[-1])
                     else:
+
+
                         fecha_str = registro[2].strip()
                         fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
                         anio_index = fecha.year - ANIO_INICIO
                         mes_index = fecha.month - 1
-                        matriz[anio_index][mes_index][0] += 1 
+
+                        if registro[3].strip() == "W":
+                            matriz[anio_index][mes_index]["victorias"] += 1
+                        elif registro[3].strip() == "L":
+                            matriz[anio_index][mes_index]["derrotas"] += 1
+                        elif registro[3].strip() == "N":
+                            matriz[anio_index][mes_index]["empates"] += 1
+                        matriz[anio_index][mes_index]["cantidadResultados"] += 1
                         break
                     
             return matriz
