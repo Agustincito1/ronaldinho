@@ -124,32 +124,36 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-
 <script>
     // Variables de configuración
     const BASE_API_URL = '/api/colisiones/'; // Endpoint para colisiones
-    // El rango de años debe ser dinámico, se asume un rango inicial
+    // START_YEAR ya no es tan relevante, ya que los años vienen del backend,
+    // pero se mantiene por si hubiera lógica de relleno.
     const START_YEAR = 2025; 
     const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
     let userData = null; // Almacena los datos del backend
     let currentYearIndex = 0; // Índice del año a mostrar (0 para el primer año)
-    let availableYears = []; // Se llena con años desde START_YEAR en base a la longitud de `Colisiones`
+    // availableYears será un array de strings de año, e.g., ['2025', '2026', ...]
+    let availableYears = []; 
 
     /**
      * Función que renderiza la tabla para el año actual seleccionado (currentYearIndex).
      */
     function renderYearTable() {
-        if (!userData || !userData.Colisiones || userData.Colisiones.length === 0) {
-            $('#tabla-colisiones tbody').empty().append('<tr><td colspan="6" class="text-center">No hay datos de colisiones para este usuario.</td></tr>');
+        // Verificar si hay datos o si availableYears está vacío
+        if (!userData || !userData.Colisiones || availableYears.length === 0) {
+            $('#tabla-colisiones tbody').empty().append('<tr><td colspan="6" class="text-center">No hay datos de colisiones para este usuario o año.</td></tr>');
             $('#total-anual-colisiones').text(0);
             $('#current-year').text('N/A');
             $('#prev-year, #next-year').prop('disabled', true);
             return;
         }
 
-        const currentYearStats = userData.Colisiones[currentYearIndex];
+        // Obtener la clave del año (e.g., '2025')
         const currentYear = availableYears[currentYearIndex];
+        // Acceder a los datos usando la clave del año (OBJETO.CLAVE_DEL_AÑO)
+        const currentYearStats = userData.Colisiones[currentYear];
         
         const tbody = $('#tabla-colisiones tbody');
         tbody.empty();
@@ -216,13 +220,12 @@
         const API_URL = BASE_API_URL + userID;
 
         // Mostrar mensaje de carga
-        $('#loading-message').removeClass('alert-danger alert-warning').addClass('alert-info').html(`Cargando colisiones para ID: <strong>${userID}</strong>...`);
+        $('#loading-message').removeClass('alert-danger alert-warning').addClass('alert-info').html(`Cargando colisiones para ID: <strong>${userID}</strong>...`).show();
         $('#dynamic-view-container').hide();
 
         fetch(API_URL)
             .then(response => {
                 if (!response.ok) {
-                    // Si el backend devuelve 404, el mensaje de error es más específico
                     throw new Error(`Error ${response.status}: Usuario con ID ${userID} no encontrado (o sin partidas).`);
                 }
                 return response.json(); 
@@ -231,8 +234,8 @@
                 // 1. Almacenar los datos y configurar el array de años disponibles
                 userData = data;
                 
-                // Generar los años disponibles basándose en la longitud del array Colisiones
-                availableYears = Array.from({ length: data.Colisiones.length }, (_, i) => START_YEAR + i);
+                // ✅ CLAVE: Generar los años disponibles a partir de las CLAVES del objeto Colisiones
+                availableYears = Object.keys(data.Colisiones).sort();
                 currentYearIndex = 0; // Mostrar siempre el primer año disponible
 
                 // 2. Generar el resumen total (Small Boxes)
@@ -248,8 +251,9 @@
             })
             .catch(error => {
                 console.error('Error al obtener los datos:', error);
-                $('#loading-message').removeClass('alert-info').addClass('alert-danger').html(`<strong>Error de Carga:</strong> ${error.message}`);
+                $('#loading-message').removeClass('alert-info').addClass('alert-danger').html(`<strong>Error de Carga:</strong> ${error.message}`).show();
                 userData = null;
+                availableYears = []; // Limpiar años en caso de error
                 $('#dynamic-view-container').hide(); // Asegurarse de que se oculte en caso de error
             });
     }
@@ -264,17 +268,23 @@
         let totalArcoIzquierdo = 0;
         let totalPelota = 0;
         
-        data.Colisiones.forEach(yearStats => {
+        // Iterar sobre los arrays de estadísticas mensuales de CADA AÑO
+        // Object.values(data.Colisiones) devuelve un array de los arrays de 12 meses
+        Object.values(data.Colisiones).forEach(yearStats => {
             yearStats.forEach(monthStat => {
-                totalColisiones += monthStat.cantidadColisiones;
-                totalBot += monthStat.bot;
-                totalArcoDerecho += monthStat.arcoDerecho;
-                totalArcoIzquierdo += monthStat.arcoIzquierdo;
-                totalPelota += monthStat.pelota;
+                // Usar ?? 0 para manejar valores nulos si fuera necesario (aunque tu estructura los tiene)
+                totalColisiones += monthStat.cantidadColisiones ?? 0;
+                totalBot += monthStat.bot ?? 0;
+                totalArcoDerecho += monthStat.arcoDerecho ?? 0;
+                totalArcoIzquierdo += monthStat.arcoIzquierdo ?? 0;
+                totalPelota += monthStat.pelota ?? 0;
             });
         });
 
-        const yearRange = availableYears.length > 0 ? `(${availableYears[0]}-${availableYears[availableYears.length - 1]})` : '';
+        // Utilizar el array de años ya calculado para el rango
+        const yearRange = availableYears.length > 0
+        ? `(${availableYears[0]} - ${availableYears[availableYears.length - 1]})`
+        : '';
 
         const resumenTotalHTML = `
             <div class="col-lg-3 col-6"><div class="small-box bg-info"><div class="inner"><h3>${totalColisiones}</h3><p>Total Colisiones ${yearRange}</p></div><div class="icon"><i class="fas fa-random"></i></div></div></div>
@@ -316,11 +326,8 @@
         
         // Carga inicial al iniciar la página
         const defaultID = $('#user-id-input').val();
-        // Nota: Esta llamada fallará en un entorno local sin el backend corriendo,
-        // pero es el comportamiento esperado para cargar datos al inicio.
         cargarEstadisticas(defaultID); 
     });
 </script>
-
 </body>
 </html>
