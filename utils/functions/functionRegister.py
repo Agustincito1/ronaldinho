@@ -662,7 +662,7 @@ def validar_registro(nombre, password, usuarios, ultimo_id, current_error, curre
                     # Abrimos en modo texto para escribir la línea de texto
                     with open(RUTA_USUARIOS, "a", encoding="utf-8") as f:
                         # Escribimos el registro de 41 bytes (2+1+18+1+18+1 = 41)
-                        f.write(f"{id_formateado},{nombre_formateado},{password_formateada},00000,00000,00000,00000\n")
+                        f.write(f"{id_formateado},{nombre_formateado},{password_formateada},00000,00000,00000,00000,00000,00000,00000,00000,00000,00000\n")
                     
                     usuarios_actualizados = usuarios + [nombre_limpio]
                     ultimo_id_actualizado = nuevo_id

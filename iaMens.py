@@ -5,16 +5,16 @@ import pygame
 import sys
 import datetime
 import json
-from config import * 
+from config import *
+from utils.puntero.punteroObj import PunteroObj
+
 
 # --- CONFIGURACIÓN DE ARCHIVOS Y API ---
 openai.api_key = "DRNY_MbPrGlC6EIdQfi8njlZyl2ui5V3jgsOrSiWFX4"
 openai.api_base = "https://api.poe.com/v1"
-
-ARCHIVO_DIARIO = "./utils/regist/juegos_diarios.txt"
-ARCHIVO_PUNTUACIONES = "./utils/regist/puntuaciones_totales.txt" 
+puntero = PunteroObj()
 LIMITE_PREGUNTAS = 3
-USUARIO_ACTUAL = "usuario_demo_123"
+USUARIO_ACTUAL = 1
 
 ROJO_PRINCIPAL = ROJO 
 GRIS_CLARO_BG = BLANCOG
@@ -28,136 +28,6 @@ COLOR_CORRECTO = (50, 200, 50)
 COLOR_INCORRECTO = (255, 50, 50) 
 COLOR_PUNTUACION = (255, 215, 0)
 
-# --- GESTIÓN DE ARCHIVOS DIARIOS (Existente) ---
-
-def obtener_datos_diarios():
-    datos = {}
-    ultimo_id = 0
-    if not os.path.exists(ARCHIVO_DIARIO):
-        return datos, ultimo_id
-    try:
-        with open(ARCHIVO_DIARIO, 'r') as f:
-            for line in f:
-                if line.strip():
-                    try:
-                        campos = line.strip().split(',')
-                        if len(campos) == 4:
-                            registro_id, usuario, fecha, conteo = campos
-                            datos[usuario] = {"id": int(registro_id), "fecha": fecha, "conteo": int(conteo)}
-                            ultimo_id = max(ultimo_id, int(registro_id))
-                    except ValueError:
-                        continue 
-        return datos, ultimo_id
-    except IOError:
-        return datos, ultimo_id
-
-def guardar_datos_diarios(datos):
-    try:
-        with open(ARCHIVO_DIARIO, 'w') as f:
-            for usuario, registro in datos.items():
-                linea = f"{registro['id']},{usuario},{registro['fecha']},{registro['conteo']}\n"
-                f.write(linea)
-    except IOError as e:
-        print(f"❌ Error al guardar el archivo diario: {e}")
-
-def verificar_limite_diario(usuario):
-    hoy = datetime.date.today().isoformat()
-    datos_diarios, ultimo_id = obtener_datos_diarios()
-
-    if usuario not in datos_diarios:
-        nuevo_id = ultimo_id + 1
-        datos_diarios[usuario] = {"id": nuevo_id, "fecha": hoy, "conteo": 0}
-        guardar_datos_diarios(datos_diarios)
-        return True
-
-    registro_usuario = datos_diarios[usuario]
-    
-    if registro_usuario["fecha"] == hoy:
-        return registro_usuario["conteo"] < LIMITE_PREGUNTAS
-    else:
-        registro_usuario["fecha"] = hoy
-        registro_usuario["conteo"] = 0
-        guardar_datos_diarios(datos_diarios)
-        return True
-
-def incrementar_conteo_diario(usuario):
-    hoy = datetime.date.today().isoformat()
-    datos_diarios, ultimo_id = obtener_datos_diarios()
-    
-    if usuario not in datos_diarios:
-        nuevo_id = ultimo_id + 1
-        datos_diarios[usuario] = {"id": nuevo_id, "fecha": hoy, "conteo": 1}
-    elif datos_diarios[usuario]["fecha"] == hoy:
-        datos_diarios[usuario]["conteo"] += 1
-    else:
-        datos_diarios[usuario]["fecha"] = hoy
-        datos_diarios[usuario]["conteo"] = 1
-
-    guardar_datos_diarios(datos_diarios)
-    return datos_diarios[usuario]["conteo"]
-
-# --- GESTIÓN DE PUNTUACIONES (Modificado para ser Acumulable) ---
-
-def cargar_puntuaciones():
-
-    puntuaciones = {}
-    ultimo_id = 0
-    if not os.path.exists(ARCHIVO_PUNTUACIONES):
-        return puntuaciones, ultimo_id
-    try:
-        with open(ARCHIVO_PUNTUACIONES, 'r') as f:
-            for line in f:
-                if line.strip():
-                    try:
-                        # Formato esperado: id,usuario,puntaje
-                        campos = line.strip().split(',')
-                        if len(campos) == 3:
-                            registro_id, usuario, puntaje_str = campos
-                            puntuaciones[usuario] = {"id": int(registro_id), "puntaje": int(puntaje_str)}
-                            ultimo_id = max(ultimo_id, int(registro_id))
-                    except ValueError:
-                        continue
-        return puntuaciones, ultimo_id
-    except IOError:
-        print(f"⚠️ No se pudo leer el archivo de puntuaciones: {ARCHIVO_PUNTUACIONES}")
-        return puntuaciones, ultimo_id
-
-def guardar_puntuaciones(usuario, puntaje_ganado):
-    """
-    Suma el puntaje ganado al puntaje total acumulado del usuario.
-    """
-    puntuaciones, ultimo_id = cargar_puntuaciones()
-    
-    puntaje_registro = puntuaciones.get(usuario)
-
-    if puntaje_registro:
-        # El usuario ya existe, sumamos el nuevo puntaje
-        puntaje_registro["puntaje"] += puntaje_ganado
-        print(f"🪙 Puntos de {usuario} actualizados. Total: {puntaje_registro['puntaje']}")
-    else:
-        # El usuario es nuevo en el registro de puntuaciones
-        nuevo_id = ultimo_id + 1
-        puntuaciones[usuario] = {"id": nuevo_id, "puntaje": puntaje_ganado}
-        print(f"✨ Nuevo usuario ({usuario}) registrado con {puntaje_ganado} puntos.")
-    
-    # Reescribir todo el archivo
-    try:
-        with open(ARCHIVO_PUNTUACIONES, 'w') as f:
-            # Ordenar por ID para mantener la estructura, aunque se pueda usar el diccionario
-            # Usamos una lista de tuplas para obtener el ID, usuario y puntaje
-            registros = [(reg["id"], user, reg["puntaje"]) for user, reg in puntuaciones.items()]
-            registros.sort(key=lambda x: x[0])
-
-            for reg_id, user, score in registros:
-                linea = f"{reg_id},{user},{score}\n"
-                f.write(linea)
-        return True
-    except IOError as e:
-        print(f"❌ Error al guardar el archivo de puntuaciones: {e}")
-        return False
-
-
-# --- LLAMADAS A LA IA (Existente) ---
 
 def generar_mensaje(usuario):
     prompt = "Genera una pregunta sobre educación ambiental con 3 opciones. Devuélvelo exactamente en formato JSON con esta estructura: {\"pregunta\": \"texto de la pregunta\", \"opciones\": [\"opción A\", \"opción B\", \"opción C\"]} No escribas nada fuera del JSON."
@@ -326,7 +196,10 @@ def mostrar_bloqueo(puntaje_ganado=None, puntaje_acumulado=None):
 # --- BUCLE PRINCIPAL DEL JUEGO (Modificado) ---
 
 def show_preguntas(usuario):
-    if not verificar_limite_diario(usuario):
+    hoy = datetime.date.today().isoformat()
+
+
+    if not puntero.validarDiario(int(usuario), hoy):
         mostrar_bloqueo()
         return
 
@@ -338,13 +211,10 @@ def show_preguntas(usuario):
     
     # Variables de puntuación
     respuestas_correctas = 0
-    
-    datos_diarios, _ = obtener_datos_diarios()
-    conteo_actual = datos_diarios.get(usuario, {}).get("conteo", 0)
+    conteo_actual = puntero.validarDiario(int(usuario), hoy)
     
     # Obtener el puntaje total actual para mostrarlo en el HUD
-    puntuaciones_totales, _ = cargar_puntuaciones()
-    puntaje_acumulado_inicial = puntuaciones_totales.get(usuario, {}).get("puntaje", 0)
+    puntaje_acumulado = puntero.getPuntajeUser(int(usuario))
 
 
     def cargar_nueva_pregunta():
@@ -384,19 +254,17 @@ def show_preguntas(usuario):
     
     def manejar_fin_de_juego():
         """Calcula el puntaje ganado y lo guarda, luego muestra el resultado."""
-        nonlocal respuestas_correctas, puntaje_acumulado_inicial
+        nonlocal respuestas_correctas, puntaje_acumulado
         
         # Calcular puntaje ganado en esta sesión: respuestas_correctas * 10
         puntaje_ganado = respuestas_correctas * 10
         
         # Guardar el puntaje y obtener el total acumulado
-        guardar_puntuaciones(usuario, puntaje_ganado)
+        puntero.registrarPuntuaciones(int(usuario), puntaje_ganado)
         
-        # Necesitamos recargar las puntuaciones para mostrar el total final
-        puntuaciones_totales_final, _ = cargar_puntuaciones()
-        puntaje_acumulado_final = puntuaciones_totales_final.get(usuario, {}).get("puntaje", puntaje_ganado)
+        # Necesitamos recargar las puntuaciones para mostrar el total fina
         
-        # Mostrar la pantalla de fin de juego con los puntos ganados y el total
+        puntaje_acumulado_final = puntero.getPuntajeUser(int(usuario))
         mostrar_bloqueo(puntaje_ganado, puntaje_acumulado_final)
         return
 
@@ -439,7 +307,7 @@ def show_preguntas(usuario):
             
             elif estado_juego == "RESULTADO" and evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
                 # Se incrementa el conteo de juegos diarios
-                conteo_actual = incrementar_conteo_diario(usuario) 
+                conteo_actual = puntero.conteoDiario(int(usuario), hoy) 
                 
                 if conteo_actual >= LIMITE_PREGUNTAS:
                     manejar_fin_de_juego() # Llama a la nueva función de fin de juego
@@ -462,9 +330,7 @@ def show_preguntas(usuario):
         ventana.blit(texto_conteo, (WIDTH - texto_conteo.get_width() - 20, 20))
         
         # Muestra el total acumulado actual (solo se actualiza al inicio o al terminar la sesión)
-        puntuaciones_temp, _ = cargar_puntuaciones()
-        puntaje_actual_mostrar = puntuaciones_temp.get(usuario, {}).get("puntaje", 0)
-
+        puntaje_actual_mostrar = puntero.getPuntajeUser(int(usuario))
         texto_monedas = fuente_chica2.render(f"Monedas: {puntaje_actual_mostrar}", True, COLOR_PUNTUACION)
         ventana.blit(texto_monedas, (WIDTH - texto_monedas.get_width() - 20, 50))
 

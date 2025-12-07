@@ -41,6 +41,30 @@ class PunteroObj:
             "ant": 5              
         }
 
+        self.JUEGOS_DIARIOS = {
+            "IdReg": 5,           
+            "IdUser": 4,          
+            "Fecha": 10,         
+            "Resultado": 2,                
+            "sig": 5,             
+            "ant": 5              
+        }
+
+        self.PUNTUACIONES_TOTALES = {
+            "IdReg": 5,           
+            "IdUser": 4,                
+            "Resultado": 12,                           
+        }
+
+        self.SKINS_ADQUIRIDAS = {
+            "IdReg": 5,           
+            "IdUser": 4,          
+            "Fecha": 10,         
+            "Resultado": 12,                
+            "sig": 5,             
+            "ant": 5              
+        }
+
         self.COLUMNAS_USUARIO = {
             "IdUsuario": 2,                    
             "Nombre": 18,         
@@ -48,13 +72,21 @@ class PunteroObj:
             "IResultado": 5,              
             "FResultado": 5,   
             "IEvento": 5,              
-            "FEvento": 5,                     
+            "FEvento": 5,  
+            "IJuegosDiarios": 5,   
+            "FJuegosDiarios": 5, 
+            "IPuntaciones": 5, 
+            "FPuntuaciones": 5, 
+            "ISkins": 5, 
+            "FSkins": 5,               
         }
         # 1 eventos 2 resultados 3 totalEventos
         self.RUTAS = [
             "./utils/puntero/eventos.txt",
             "./utils/puntero/resultados.txt",
-            "./utils/regist/usuarios.txt"
+            "./utils/regist/usuarios.txt",
+            "./utils/regist/juegos_diarios.txt",
+            "./utils/regist/puntuaciones_totales.txt"
         ]
     def calcular(self, columnas, typeRuta):
         try:
@@ -67,6 +99,215 @@ class PunteroObj:
 
         except FileNotFoundError:
             print("Archivo no encontrado.")
+
+    def conteoDiario(self, id_usuario, hoy):
+        cantidadRegistros,  resultColumna = self.calcular(self.JUEGOS_DIARIOS, 3)
+        cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
+
+        with open(self.RUTAS[2], "rb") as archivo_usuario:
+            archivo_usuario.seek((resultadoColumnaU * id_usuario) - resultadoColumnaU) 
+            registro_usuario = archivo_usuario.read(resultadoColumnaU).decode("utf-8").strip().split(",")
+            inicio_diario = int(registro_usuario[7])
+            fin_diario = int(registro_usuario[8])
+        
+
+          
+        with open(self.RUTAS[3], "rb") as archivo_diarios:
+            archivo_diarios.seek((resultColumna * inicio_diario) - resultColumna) 
+            registro = archivo_diarios.read(resultColumna).decode("utf-8").strip().split(",")
+            conteo = int(registro[3]) + 1
+            conteo = rellenar(str(conteo), self.JUEGOS_DIARIOS["resultado"], "izquierda")
+            registro[3] = conteo
+            registro = ",".join(registro)
+            archivo_diarios.seek((resultColumna * inicio_diario) - resultColumna) 
+            archivo_diarios.write(registro.encode("utf-8"))
+
+
+
+    def validarDiario(self, id_usuario, hoy):
+        cantidadRegistros,  resultColumna = self.calcular(self.JUEGOS_DIARIOS, 3)
+        cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
+
+        with open(self.RUTAS[2], "rb") as archivo_usuario:
+            archivo_usuario.seek((resultadoColumnaU * id_usuario) - resultadoColumnaU) 
+            registro_usuario = archivo_usuario.read(resultadoColumnaU).decode("utf-8").strip().split(",")
+            inicio_diario = int(registro_usuario[7])
+            fin_diario = int(registro_usuario[8])
+
+            while True:
+                try:
+
+                    with open(self.RUTAS[3], "rb") as archivo_diarios:
+                        
+                        archivo_diarios.seek((resultColumna * inicio_diario)-resultColumna)
+                        registro = archivo_diarios.read(resultColumna).decode("utf-8").strip().split(",")
+                        inicio_diario = int(registro[4])
+                        fin_diario = int(registro[5])
+
+                        if registro[2] == hoy:
+
+                            if int(registro[3]) == 3:
+                                return False
+                            else:
+                                return registro[3]
+                        
+                        if inicio_diario == 0:
+                            break
+                except OSError:
+                    return True
+            
+            return True
+    
+    def getPuntajeUser(self, id_usuario):
+        cantidadRegistros,  resultColumna = self.calcular(self.PUNTUACIONES_TOTALES, 4)
+        cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
+        try:
+
+            with open(self.RUTAS[2], "rb") as archivo_usuario:
+                archivo_usuario.seek((resultadoColumnaU * id_usuario) - resultadoColumnaU) 
+                registro_usuario = archivo_usuario.read(resultadoColumnaU).decode("utf-8").strip().split(",")
+                inicio_diario = int(registro_usuario[11])
+                fin_diario = int(registro_usuario[12])
+                with open(self.RUTAS[4], "rb") as archivo_puntuacion:
+                    archivo_puntuacion.seek((resultColumna * inicio_diario) - resultColumna) 
+                    registro = archivo_puntuacion.read(resultColumna).decode("utf-8").strip().split(",")
+                    puntaje = int(registro[2])
+                    
+                return puntaje 
+        except OSError:
+            return False
+        
+
+
+    def registrarPuntuaciones(self, id_usuario, puntaje):
+        cantidadRegistros,  resultColumna = self.calcular(self.PUNTUACIONES_TOTALES, 4)
+        cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
+        nuevoIdReg = cantidadRegistros + 1
+
+        # actualizar I y F en archivo usuario
+        # 01,agustincito       ,123               ,00001,00003,00001,00113,00000,00000,00000,00000,00000,00000 
+        # id, usuario, password, IResultado, FResultado, IEvento, FEvento, IJuegosDiarios, FJuegosDiarios,IPuntaciones, FPuntuaciones,ISkins, FSkins,       
+        # 0     1       2           3           4          5         6       7                   8        
+
+        # actualizar IEvento y FEvento en archivo usuario con seek
+
+        with open(self.RUTAS[2], "rb") as archivo_usuario:
+            archivo_usuario.seek((resultadoColumnaU * id_usuario) - resultadoColumnaU) 
+            registro_usuario = archivo_usuario.read(resultadoColumnaU).decode("utf-8").strip().split(",")
+            inicio_puntuacion = int(registro_usuario[9])
+            fin_puntuacion= int(registro_usuario[10])
+
+            if inicio_puntuacion == 0:
+                newinicio_puntuacion = nuevoIdReg
+                newfin_puntuacion = nuevoIdReg
+            else:
+                newinicio_resultado = inicio_puntuacion
+                newfin_puntuacion = nuevoIdReg
+
+            registro_usuario[9] = rellenar(newinicio_puntuacion, self.COLUMNAS_USUARIO["IPuntaciones"], "izquierda")
+            registro_usuario[10] = rellenar(newfin_puntuacion, self.COLUMNAS_USUARIO["FPuntuaciones"], "izquierda")
+
+            registro_usuario = ",".join(registro_usuario)
+
+        with open(self.RUTAS[2], "r+b") as archivo_usuario:
+            archivo_usuario.seek((resultadoColumnaU * id_usuario) - resultadoColumnaU) 
+            archivo_usuario.write(registro_usuario.encode("utf-8"))
+
+        # registrar diario en archivo juegos
+
+        if inicio_puntuacion == 0 and fin_puntuacion == 0:
+            registro_formateado = (
+                rellenar(nuevoIdReg, self.JUEGOS_DIARIOS["IdReg"], "izquierda") + "," +
+                rellenar(id_usuario, self.JUEGOS_DIARIOS["IdUser"], "izquierda") + "," +
+                rellenar(puntaje, self.JUEGOS_DIARIOS["Resultado"], "derecha_espacio") + "," +
+                rellenar("00000", self.JUEGOS_DIARIOS["sig"], "izquierda") + "," +
+                rellenar("00000", self.JUEGOS_DIARIOS["ant"], "izquierda") + "\n"
+            )
+        else:
+            #conseguir el id del ultimo registro para actualizar su campo 
+            with open(self.RUTAS[3], "r+b") as archivo_diarios:
+                archivo_diarios.seek((resultColumna * fin_puntuacion) - resultColumna) 
+                registro_anterior = archivo_diarios.read(resultColumna).decode("utf-8").strip().split(",")
+                result = int(registro_anterior[3]) + puntaje
+                result = rellenar(str(result), self.PUNTUACIONES_TOTALES["resultado"], "izquierda")
+                registro_anterior[3] = result
+                registro_anterior = ",".join(registro_anterior)
+                archivo_diarios.seek((resultColumna * fin_puntuacion) - resultColumna) 
+                archivo_diarios.write(registro_anterior.encode("utf-8"))
+
+        pass
+
+    
+    def registrarJuegos(self, id_usuario, fecha, resultado):
+        cantidadRegistros,  resultColumna = self.calcular(self.JUEGOS_DIARIOS, 3)
+        cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
+        nuevoIdReg = cantidadRegistros + 1
+
+        # actualizar I y F en archivo usuario
+        # 01,agustincito       ,123               ,00000,00000,00000,00000,00000,00000 
+        # id, usuario, password, IResultado, FResultado, IEvento, FEvento, IJuegosDiarios, FJuegosDiarios,IPuntaciones, FPuntuaciones,ISkins, FSkins,       
+        # 0     1       2           3           4          5         6       7                   8
+
+        # actualizar IEvento y FEvento en archivo usuario con seek
+
+        with open(self.RUTAS[2], "rb") as archivo_usuario:
+            archivo_usuario.seek((resultadoColumnaU * id_usuario) - resultadoColumnaU) 
+            registro_usuario = archivo_usuario.read(resultadoColumnaU).decode("utf-8").strip().split(",")
+            inicio_diario = int(registro_usuario[7])
+            fin_diario = int(registro_usuario[8])
+
+            if inicio_diario == 0:
+                newinicio_diario = nuevoIdReg
+                newfin_diario = nuevoIdReg
+            else:
+                newinicio_resultado = inicio_diario
+                newfin_diario = nuevoIdReg
+
+            registro_usuario[7] = rellenar(newinicio_diario, self.COLUMNAS_USUARIO["IJuegosDiarios"], "izquierda")
+            registro_usuario[8] = rellenar(newfin_diario, self.COLUMNAS_USUARIO["FJuegosDiarios"], "izquierda")
+
+            registro_usuario = ",".join(registro_usuario)
+
+        with open(self.RUTAS[2], "r+b") as archivo_usuario:
+            archivo_usuario.seek((resultadoColumnaU * id_usuario) - resultadoColumnaU) 
+            archivo_usuario.write(registro_usuario.encode("utf-8"))
+
+        # registrar diario en archivo juegos
+
+        if inicio_diario == 0 and fin_diario == 0:
+            registro_formateado = (
+                rellenar(nuevoIdReg, self.JUEGOS_DIARIOS["IdReg"], "izquierda") + "," +
+                rellenar(id_usuario, self.JUEGOS_DIARIOS["IdUser"], "izquierda") + "," +
+                rellenar(fecha, self.JUEGOS_DIARIOS["Fecha"], "izquierda") + "," +
+                rellenar(resultado, self.JUEGOS_DIARIOS["resultado"], "derecha_espacio") + "," +
+                rellenar("00000", self.JUEGOS_DIARIOS["sig"], "izquierda") + "," +
+                rellenar("00000", self.JUEGOS_DIARIOS["ant"], "izquierda") + "\n"
+            )
+        else:
+            #conseguir el id del ultimo registro para actualizar su campo 
+            with open(self.RUTAS[0], "r+b") as archivo_eventos:
+                archivo_eventos.seek((resultColumna * fin_diario) - resultColumna) 
+                registro_anterior = archivo_eventos.read(resultColumna).decode("utf-8").strip().split(",")
+                index = registro_anterior[0]
+                registro_anterior[-1] = rellenar(nuevoIdReg, self.COLUMNAS_EVENTOS["sig"], "izquierda")
+                registro_anterior = ",".join(registro_anterior)
+                archivo_eventos.seek((resultColumna * fin_diario) - resultColumna) 
+                archivo_eventos.write(registro_anterior.encode("utf-8"))
+
+            registro_formateado = (
+               rellenar(nuevoIdReg, self.JUEGOS_DIARIOS["IdReg"], "izquierda") + "," +
+                rellenar(id_usuario, self.JUEGOS_DIARIOS["IdUser"], "izquierda") + "," +
+                rellenar(fecha, self.JUEGOS_DIARIOS["Fecha"], "izquierda") + "," +
+                rellenar(resultado, self.JUEGOS_DIARIOS["resultado"], "derecha_espacio") + "," +
+                rellenar(index, self.JUEGOS_DIARIOS["sig"], "izquierda") + "," +
+                rellenar("00000", self.JUEGOS_DIARIOS["ant"], "izquierda") + "\n"
+            )
+
+        with open(self.RUTAS[0], "a") as archivo_eventos:
+            archivo_eventos.write(registro_formateado)
+    
+        pass
+
 
     def registrarEvento(self, id_usuario, fecha, evento, x=0, y=0):
         cantidadRegistros,  resultColumna = self.calcular(self.COLUMNAS_EVENTOS, 0)
@@ -142,6 +383,8 @@ class PunteroObj:
 
         pass
 
+
+
     
     def sacar_usuario(self, id):
         cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
@@ -157,6 +400,7 @@ class PunteroObj:
             return None
 
         pass
+    # def getJuegosDiarios(self)
 
     def getColisiones(self, id_usuario):
 
