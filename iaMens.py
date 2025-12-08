@@ -29,6 +29,8 @@ COLOR_INCORRECTO = (255, 50, 50)
 COLOR_PUNTUACION = (255, 215, 0)
 
 
+
+
 def generar_mensaje(usuario):
     prompt = "Genera una pregunta sobre educación ambiental con 3 opciones. Devuélvelo exactamente en formato JSON con esta estructura: {\"pregunta\": \"texto de la pregunta\", \"opciones\": [\"opción A\", \"opción B\", \"opción C\"]} No escribas nada fuera del JSON."
     try:
@@ -193,11 +195,17 @@ def mostrar_bloqueo(puntaje_ganado=None, puntaje_acumulado=None):
                 bloqueado = False
         clock.tick(FPS)
         
-# --- BUCLE PRINCIPAL DEL JUEGO (Modificado) ---
+# --- BUCLE PRINCIPAL DEL JUEGO (Modificado) --- ver esto para que cuando el usuario no tenga datosse registre
+def registrar_datos(usuario):
+    hoy = datetime.date.today().isoformat()
+    puntero.registrarPuntuaciones(usuario, 0)
+    puntero.registrarJuegos(usuario, hoy, 0)
 
 def show_preguntas(usuario):
-    hoy = datetime.date.today().isoformat()
 
+    
+    hoy = datetime.date.today().isoformat()
+    # registrar_datos(usuario)
 
     if not puntero.validarDiario(int(usuario), hoy):
         mostrar_bloqueo()
@@ -221,7 +229,7 @@ def show_preguntas(usuario):
         nonlocal estado_juego, pregunta_actual, opciones_botones, mensaje_resultado, color_resultado
         
         # Verificar si el límite ya se alcanzó al inicio de la carga
-        if conteo_actual >= LIMITE_PREGUNTAS:
+        if int(conteo_actual) >= LIMITE_PREGUNTAS:
             manejar_fin_de_juego()
             return
 
@@ -307,7 +315,7 @@ def show_preguntas(usuario):
             
             elif estado_juego == "RESULTADO" and evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
                 # Se incrementa el conteo de juegos diarios
-                conteo_actual = puntero.conteoDiario(int(usuario), hoy) 
+                conteo_actual = int(puntero.conteoDiario(int(usuario), hoy)) 
                 
                 if conteo_actual >= LIMITE_PREGUNTAS:
                     manejar_fin_de_juego() # Llama a la nueva función de fin de juego
