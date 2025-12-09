@@ -178,15 +178,14 @@ mesesTotal = {
 inxMes = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre", "Total"]
 IDs = [1, 2, 3]
 anios = [2025, 2026, 2027]
-columnasMes = "|"+rellenar("Id User", 11) +""
-for key, value in mesesList.items():
-    columnasMes += "|"+ rellenar(key, 15) 
-columnasMes += "|"
+columnasMes = ""
 
 
 
 
 for anio in anios:  
+    
+    
     mes_default = {
         "pelota": 0,
         "bot": 0,
@@ -204,12 +203,13 @@ for anio in anios:
         "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre","Total"
     ]}
 
-    columnasMes = "|"+rellenar("Id User", 11) +""
+    columnasMes += str(anio)+"\n"
+
+    columnasMes += "|"+rellenar("Id User", 11) +""
     for key, value in mesesList.items():
         columnasMes += "|"+ rellenar(key, 15) 
     columnasMes += "|"
 
-    print("Año: ", anio)
     for idUser in IDs:
         reporte = 0
         try:
@@ -281,13 +281,8 @@ for anio in anios:
             else:
                 text += f"|{rellenar('No hay datos disponibles para el año.', 207)}"
                 continue
-
-
-
-
             columnasMes += "\n"+ text + "|"
-        except Exception as e:
-            limpiar_consola()    
+        except Exception as e: 
             text += f"Ocurrió un error: {e}"
 
 
@@ -296,9 +291,11 @@ for anio in anios:
     for key, value in mesesTotal.items():
         for key, value in value.items():
             columnasMes += "|"+ rellenar(value, 3) 
-    columnasMes += "|"
+    columnasMes += "| \n"
 
-    print(columnasMes)
+
+    with open("./show.txt", "w" ) as file:
+        file.write(columnasMes)
 
 
 
