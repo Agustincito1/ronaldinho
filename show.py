@@ -281,7 +281,9 @@ for anio in anios:
             else:
                 text += f"|{rellenar('No hay datos disponibles para el año.', 207)}"
                 continue
+
             columnasMes += "\n"+ text + "|"
+            
         except Exception as e: 
             text += f"Ocurrió un error: {e}"
 
