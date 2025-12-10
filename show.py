@@ -230,7 +230,7 @@ for anio in anios:
                         for key, value in colision.items():
                             if key == "arcoDerecho":
                                 arcoDerecho += int(value)
-                            elif key == "arcoIzquierd":
+                            elif key == "arcoIzquierdo":
                                 arcoIzquierdo += int(value)   
                             elif key == "bot":
                                 bot += int(value)

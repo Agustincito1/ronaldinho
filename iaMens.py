@@ -206,10 +206,12 @@ def show_preguntas(usuario):
     
     hoy = datetime.date.today().isoformat()
     # registrar_datos(usuario)
-
     if not puntero.validarDiario(int(usuario), hoy):
         mostrar_bloqueo()
         return
+    
+    if (puntero.validarDiario(int(usuario), hoy)) == "NoRegist":
+        puntero.registrarJuegos(usuario, hoy, 0)
 
     estado_juego = "CARGANDO"
     pregunta_actual = None

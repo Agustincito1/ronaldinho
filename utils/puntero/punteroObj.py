@@ -53,14 +53,14 @@ class PunteroObj:
         self.PUNTUACIONES_TOTALES = {
             "IdReg": 5,           
             "IdUser": 4,                
-            "Resultado": 12,                           
+            "Resultado": 5,                           
         }
 
         self.SKINS_ADQUIRIDAS = {
             "IdReg": 5,           
             "IdUser": 4,          
             "Fecha": 10,         
-            "Resultado": 12,                
+            "Resultado": 5,                
             "sig": 5,             
             "ant": 5              
         }
@@ -111,19 +111,28 @@ class PunteroObj:
             fin_diario = int(registro_usuario[8])
         
         with open(self.RUTAS[3], "r+b") as archivo_diarios:
-            archivo_diarios.seek((resultColumna * inicio_diario) - resultColumna) 
-            registro = archivo_diarios.read(resultColumna).decode("utf-8").strip().split(",")
-            conteo = int(registro[3]) + 1
-            conteo = rellenar(str(conteo), self.JUEGOS_DIARIOS["Resultado"], "izquierda")
-            registro[3] = conteo
-            registro = ",".join(registro)
-            archivo_diarios.seek((resultColumna * inicio_diario) - resultColumna) 
-            archivo_diarios.write(registro.encode("utf-8"))
+            while True:
+                
+                archivo_diarios.seek((resultColumna * inicio_diario) - resultColumna) 
+                registro = archivo_diarios.read(resultColumna).decode("utf-8").strip().split(",")
+                print(registro)
+                if(registro[2] == hoy):
+                    conteo = int(registro[3]) + 1
+                    conteo = rellenar(str(conteo), self.JUEGOS_DIARIOS["Resultado"], "izquierda")
+                    registro[3] = conteo
+                    registro = ",".join(registro)
+                    archivo_diarios.seek((resultColumna * inicio_diario) - resultColumna) 
+                    archivo_diarios.write(registro.encode("utf-8"))
 
-            return conteo
+                    return conteo
+                else:
+                    inicio_diario = int(registro[-1])
+
+            
 
 
     def validarDiario(self, id_usuario, hoy):
+
         cantidadRegistros,  resultColumna = self.calcular(self.JUEGOS_DIARIOS, 3)
         cantidadRegistrosU, resultadoColumnaU = self.calcular(self.COLUMNAS_USUARIO, 2)
 
@@ -140,11 +149,8 @@ class PunteroObj:
                         
                         archivo_diarios.seek((resultColumna * inicio_diario)-resultColumna)
                         registro = archivo_diarios.read(resultColumna).decode("utf-8").strip().split(",")
-                        inicio_diario = int(registro[4])
-                        fin_diario = int(registro[5])
-
+                        inicio_diario = int(registro[5])
                         if registro[2] == hoy:
-
                             if int(registro[3]) == 3:
                                 return False
                             else:
@@ -152,10 +158,14 @@ class PunteroObj:
                         
                         if inicio_diario == 0:
                             break
+
                 except OSError:
                     return True
+                
             
-            return True
+            return "NoRegist"
+            
+            
     
     def getPuntajeUser(self, id_usuario):
         cantidadRegistros,  resultColumna = self.calcular(self.PUNTUACIONES_TOTALES, 4)
@@ -264,7 +274,7 @@ class PunteroObj:
                 newinicio_diario = nuevoIdReg
                 newfin_diario = nuevoIdReg
             else:
-                newinicio_resultado = inicio_diario
+                newinicio_diario = inicio_diario
                 newfin_diario = nuevoIdReg
 
             registro_usuario[7] = rellenar(newinicio_diario, self.COLUMNAS_USUARIO["IJuegosDiarios"], "izquierda")
@@ -289,7 +299,7 @@ class PunteroObj:
             )
         else:
             #conseguir el id del ultimo registro para actualizar su campo 
-            with open(self.RUTAS[0], "r+b") as archivo_eventos:
+            with open(self.RUTAS[3], "r+b") as archivo_eventos:
                 archivo_eventos.seek((resultColumna * fin_diario) - resultColumna) 
                 registro_anterior = archivo_eventos.read(resultColumna).decode("utf-8").strip().split(",")
                 index = registro_anterior[0]
@@ -508,9 +518,6 @@ class PunteroObj:
         inicio_resultado = int(usuario[3])
         fin_resultado = int(usuario[4])
 
-
-        print(fin_resultado)
-
         ANIO_INICIO = 2025
         CANT_ANIOS = 5
         MESES = 12
@@ -633,7 +640,6 @@ class PunteroObj:
             with open(self.RUTAS[1], "r+b") as archivo_eventos:
                 archivo_eventos.seek((resultColumna * fin_resultado) - resultColumna) 
                 registro_anterior = archivo_eventos.read(resultColumna).decode("utf-8").strip().split(",")
-                print(registro_anterior)
                 index = registro_anterior[0]
                 registro_anterior[-1] = rellenar(nuevoIdReg, self.COLUMNAS_RESULTADOS["sig"], "izquierda")
                 registro_anterior = ",".join(registro_anterior)
