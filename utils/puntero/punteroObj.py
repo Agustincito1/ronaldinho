@@ -433,6 +433,8 @@ class PunteroObj:
         ## matriz[anio][mes][{cantidadResultados,victorias,derrotas,empates}]
         matriz = {}
         for anio in anios:
+
+            # matriz[anio][mes][{cantidadResultados,victorias,derrotas,empates}]
             matriz[anio] = [
                 {
                     "cantidadColisiones": 0,
